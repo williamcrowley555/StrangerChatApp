@@ -84,6 +84,7 @@ public class SocketHandler {
 
                         case RECEIVED_SECRET_KEY:
                             onReceivedSecretKey(receivedContent);
+                            break;
 
                         case EXIT:
                             isRunning = false;
@@ -189,9 +190,8 @@ public class SocketHandler {
 
     private void onReceivedSecretKey(String received) {
         // tắt Login GUI khi client nhận được phản hồi "đã nhận được secret key" từ server
-//        RunClient.closeGUI(GUIName.LOGIN);
+        RunClient.closeGUI(GUIName.LOGIN);
         // mở GUI
-//        RunClient.openGUI();
-        System.out.println("CLOSE LOGIN");
+        RunClient.openGUI(GUIName.MAIN_MENU);
     }
 }

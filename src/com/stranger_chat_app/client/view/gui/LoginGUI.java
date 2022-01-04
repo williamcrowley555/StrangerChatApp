@@ -108,8 +108,4 @@ public class LoginGUI extends JFrame {
         btnLogin.setEnabled(!isLoading);
         btnLogin.setText(isLoading ? btnText : "Tham gia");
     }
-
-    public static void main(String[] args) {
-        new LoginGUI().setVisible(true);
-    }
 }
