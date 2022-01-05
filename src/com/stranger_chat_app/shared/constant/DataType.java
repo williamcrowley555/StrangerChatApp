@@ -8,8 +8,10 @@ public enum DataType {
     ERROR,
 
 //    Client Request
+    CLIENT_INFO,
     SECRET_KEY,
     START_WAITING,
+    LOGOUT,
 
 //    Connection state
     EXIT

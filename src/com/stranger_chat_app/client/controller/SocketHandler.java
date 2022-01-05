@@ -25,14 +25,13 @@ public class SocketHandler {
     private ObjectInput in;
 
     String nickname = null; // lưu nickname hiện tại
-    String roomId = null; // lưu room hiện tại
 
     Thread listener = null;
 
     PublicKey publicKey;
     SecretKey secretKey;
 
-    public boolean connect(String hostname, int port) {
+    public boolean connect(String hostname, int port, String nickname) {
         try {
             // establish the connection with server port
             socket = new Socket(hostname, port);
@@ -42,6 +41,9 @@ public class SocketHandler {
             this.out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
             this.out.flush();
             this.in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+
+            // save nickname
+            this.nickname = nickname;
 
             // close old listener
             if (listener != null && listener.isAlive()) {
@@ -67,11 +69,12 @@ public class SocketHandler {
         String receivedContent = null;
 
         try {
+            sendClientInfo();
+
             while (isRunning) {
                 receivedData = (Data) in.readObject();
 
                 if (receivedData != null) {
-
                     if (secretKey != null && receivedData.getContent() != null)
                         receivedContent = AESUtil.decrypt(secretKey, receivedData.getContent());
 
@@ -86,7 +89,8 @@ public class SocketHandler {
                             onReceivedSecretKey(receivedContent);
                             break;
 
-                        case EXIT:
+                        case LOGOUT:
+                            onReceiveLogout(receivedContent);
                             isRunning = false;
                             break;
                     }
@@ -138,7 +142,6 @@ public class SocketHandler {
     }
 
     private void sendData(DataType dataType, String content) {
-        System.out.println("Sent: " + dataType + " - " + content);
         Data data;
         String encryptedContent = null;
 
@@ -188,10 +191,34 @@ public class SocketHandler {
         }
     }
 
+    private void sendClientInfo() {
+        if (this.nickname != null) {
+            sendData(DataType.CLIENT_INFO, this.nickname);
+            sendData(DataType.CLIENT_INFO, this.nickname);
+        }
+    }
+
     private void onReceivedSecretKey(String received) {
         // tắt Login GUI khi client nhận được phản hồi "đã nhận được secret key" từ server
         RunClient.closeGUI(GUIName.LOGIN);
         // mở GUI
         RunClient.openGUI(GUIName.MAIN_MENU);
+    }
+
+    private void onReceiveLogout(String received) {
+        // xóa nickname
+        this.nickname = null;
+
+        // chuyển sang login GUI
+        RunClient.closeAllGUIs();
+        RunClient.openGUI(GUIName.LOGIN);
+    }
+
+    public void logout() {
+        // xóa keys
+        this.publicKey = null;
+        this.secretKey = null;
+
+        sendData(DataType.LOGOUT, null);
     }
 }

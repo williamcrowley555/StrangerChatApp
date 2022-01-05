@@ -1,5 +1,6 @@
 package com.stranger_chat_app.server.controller;
 
+import com.stranger_chat_app.server.RunServer;
 import com.stranger_chat_app.shared.constant.DataType;
 import com.stranger_chat_app.shared.model.Data;
 import com.stranger_chat_app.shared.security.AESUtil;
@@ -42,7 +43,7 @@ public class Client implements Runnable {
     public void run() {
         boolean isRunning = true;
         Data receivedData;
-        String receivedContent;
+        String receivedContent = null;
 
         try {
             sendPublicKey();
@@ -62,10 +63,17 @@ public class Client implements Runnable {
                             sendData(DataType.RECEIVED_SECRET_KEY, null);
                             break;
 
+                        case CLIENT_INFO:
+                            onReceiveClientInfo(receivedData.getContent());
+                            break;
+
                         case START_WAITING:
                             System.out.println("find a client...");
                             break;
-                        case EXIT:
+
+                        case LOGOUT:
+                            System.out.println(nickname + " has exited");
+                            onReceiveLogout(receivedContent);
                             isRunning = false;
                             break;
                     }
@@ -93,6 +101,9 @@ public class Client implements Runnable {
                 in.close();
                 out.close();
                 clientSocket.close();
+
+                // remove from clientManager
+                RunServer.clientManager.remove(this);
             } catch (IOException exception) {
                 exception.printStackTrace();
             }
@@ -141,6 +152,21 @@ public class Client implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void onReceiveClientInfo(String received) {
+        this.nickname = received;
+        System.out.println("Received nickname: " + received);
+    }
+
+    private void onReceiveLogout(String received) {
+        // log out now
+        this.nickname = null;
+        this.isWaiting = false;
+
+        // TODO leave room
+        // TODO broadcast to all clients
+        sendData(DataType.LOGOUT, null);
     }
 
     public Socket getClientSocket() {

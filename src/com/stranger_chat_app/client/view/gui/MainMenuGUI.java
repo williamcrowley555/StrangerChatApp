@@ -1,6 +1,10 @@
 package com.stranger_chat_app.client.view.gui;
 
+import com.stranger_chat_app.client.RunClient;
+
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class MainMenuGUI extends JFrame {
     private JPanel pnlMain;
@@ -24,13 +28,25 @@ public class MainMenuGUI extends JFrame {
         setContentPane(pnlMain);
         setSize(540, 340);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
 
         initComponents();
     }
 
     private void initComponents() {
+        btnLogout.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                RunClient.socketHandler.logout();
+            }
+        });
 
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                RunClient.socketHandler.logout();
+            }
+        });
     }
 }

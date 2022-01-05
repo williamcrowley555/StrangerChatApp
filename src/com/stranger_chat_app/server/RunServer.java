@@ -22,7 +22,6 @@ public class RunServer {
     }
 
     public void run() {
-
         try {
             int port = 5004;
 

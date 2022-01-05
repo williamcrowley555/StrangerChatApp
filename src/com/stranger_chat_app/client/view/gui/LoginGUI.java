@@ -48,7 +48,7 @@ public class LoginGUI extends JFrame {
                     } else {
                         String hostname = "localhost";
                         int port = 5004;
-                        connectToServer(hostname, port);
+                        connectToServer(hostname, port, nickname);
                     }
                 }
             }
@@ -62,6 +62,7 @@ public class LoginGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String nickname = txtNickname.getText();
+
                 if (nickname.isEmpty()) {
                     JOptionPane.showMessageDialog(pnlMain, "Vui lòng nhập nickname của bạn", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                 } else if (nickname.length() > 15) {
@@ -69,16 +70,16 @@ public class LoginGUI extends JFrame {
                 } else {
                     String hostname = "localhost";
                     int port = 5004;
-                    connectToServer(hostname, port);
+                    connectToServer(hostname, port, nickname);
                 }
             }
         });
     }
 
-    public void connectToServer(String hostname, int port) {
+    public void connectToServer(String hostname, int port, String nickname) {
         new Thread(() -> {
             // establish connection
-            boolean isConnected = RunClient.socketHandler.connect(hostname, port);
+            boolean isConnected = RunClient.socketHandler.connect(hostname, port, nickname);
 
             // check result
             if (isConnected) {
