@@ -2,6 +2,7 @@ package com.stranger_chat_app.client.controller;
 
 import com.stranger_chat_app.client.RunClient;
 import com.stranger_chat_app.client.view.enums.GUIName;
+import com.stranger_chat_app.client.view.enums.MainMenuState;
 import com.stranger_chat_app.shared.constant.DataType;
 import com.stranger_chat_app.shared.model.Data;
 import com.stranger_chat_app.shared.security.AESUtil;
@@ -11,6 +12,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
 import java.security.*;
@@ -87,6 +89,22 @@ public class SocketHandler {
 
                         case RECEIVED_SECRET_KEY:
                             onReceivedSecretKey(receivedContent);
+                            break;
+
+                        case PAIR_UP_WAITING:
+                            onReceivePairUpWaiting(receivedContent);
+                            break;
+
+                        case CANCEL_PAIR_UP:
+                            onReceiveCancelPairUp(receivedContent);
+                            break;
+
+                        case REQUEST_PAIR_UP:
+                            onReceiveRequestPairUp(receivedContent);
+                            break;
+
+                        case RESULT_PAIR_UP:
+                            onReceiveResultPairUp(receivedContent);
                             break;
 
                         case LOGOUT:
@@ -205,6 +223,22 @@ public class SocketHandler {
         RunClient.openGUI(GUIName.MAIN_MENU);
     }
 
+    private void onReceiveResultPairUp(String received) {
+        String[] splitted = received.split(";");
+        String status = splitted[0];
+
+        // reset display state of main menu
+        RunClient.mainMenuGUI.setDisplayState(MainMenuState.DEFAULT);
+
+        if (status.equals("failed")) {
+            String failedMsg = splitted[1];
+            JOptionPane.showMessageDialog(RunClient.mainMenuGUI, failedMsg, "Ghép đôi thất bại", JOptionPane.ERROR_MESSAGE);
+
+        } else if (status.equals("success")) {
+             System.out.println("Ghép đôi thành công");
+        }
+    }
+
     private void onReceiveLogout(String received) {
         // xóa nickname
         this.nickname = null;
@@ -214,11 +248,48 @@ public class SocketHandler {
         RunClient.openGUI(GUIName.LOGIN);
     }
 
+    public void pairUp() {
+        sendData(DataType.PAIR_UP, null);
+    }
+
+    private void onReceivePairUpWaiting(String received) {
+        RunClient.mainMenuGUI.setDisplayState(MainMenuState.FINDING_STRANGER);
+    }
+
+    private void onReceiveCancelPairUp(String received) {
+        RunClient.mainMenuGUI.setDisplayState(MainMenuState.DEFAULT);
+    }
+
+    private void onReceiveRequestPairUp(String received) {
+        // show stranger found state
+        RunClient.mainMenuGUI.foundStranger(received);
+    }
+
+    public void acceptPairUp() {
+        sendData(DataType.PAIR_UP_RESPONSE, "yes");
+    }
+
+    public void declinePairUp() {
+        sendData(DataType.PAIR_UP_RESPONSE, "no");
+    }
+
+    public void cancelPairUp() {
+        sendData(DataType.CANCEL_PAIR_UP, null);
+    }
+
     public void logout() {
         // xóa keys
         this.publicKey = null;
         this.secretKey = null;
 
         sendData(DataType.LOGOUT, null);
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

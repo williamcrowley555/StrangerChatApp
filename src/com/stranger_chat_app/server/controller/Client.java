@@ -1,6 +1,7 @@
 package com.stranger_chat_app.server.controller;
 
 import com.stranger_chat_app.server.RunServer;
+import com.stranger_chat_app.shared.constant.Code;
 import com.stranger_chat_app.shared.constant.DataType;
 import com.stranger_chat_app.shared.model.Data;
 import com.stranger_chat_app.shared.security.AESUtil;
@@ -29,7 +30,7 @@ public class Client implements Runnable {
     Client stranger;
 
     boolean isWaiting = false;
-    String acceptPairingStatus = "";
+    String acceptPairUpStatus = "";     // value: "yes", "no", ""
 
     public Client(Socket clientSocket) throws IOException {
         this.clientSocket = clientSocket;
@@ -67,8 +68,16 @@ public class Client implements Runnable {
                             onReceiveClientInfo(receivedData.getContent());
                             break;
 
-                        case START_WAITING:
-                            System.out.println("find a client...");
+                        case PAIR_UP:
+                            onReceivePairUp(receivedContent);
+                            break;
+
+                        case CANCEL_PAIR_UP:
+                            onReceiveCancelPairUp(receivedContent);
+                            break;
+
+                        case PAIR_UP_RESPONSE:
+                            onReceivePairUpResponse(receivedContent);
                             break;
 
                         case LOGOUT:
@@ -156,7 +165,74 @@ public class Client implements Runnable {
 
     private void onReceiveClientInfo(String received) {
         this.nickname = received;
-        System.out.println("Received nickname: " + received);
+    }
+
+    private void onReceivePairUp(String received) {
+        // Kiếm có ai khác đang đợi ghép cặp không
+        Client stranger = RunServer.clientManager.findWaitingClient();
+
+        if (stranger == null) {
+            // đặt cờ là đang đợi ghép cặp
+            this.isWaiting = true;
+
+            // client hiển thị trạng thái đợi ghép cặp
+            sendData(DataType.PAIR_UP_WAITING, null);
+
+        } else {
+            // nếu có người cũng đang đợi ghép đôi thì bắt đầu hỏi yêu cầu ghép cặp
+            // trong lúc hỏi thì phải tắt trạng thái đợi của 2 bên (để nếu client khác ghép đôi thì sẽ tránh việc bị ghép đè)
+            this.isWaiting = false;
+            stranger.isWaiting = false;
+
+            // lưu email đối thủ để dùng khi server nhận được result-pair-match
+            this.stranger = stranger;
+            stranger.stranger = this;
+
+            // trả thông tin đối phương về cho 2 clients
+            this.sendData(DataType.REQUEST_PAIR_UP, stranger.nickname);
+            stranger.sendData(DataType.REQUEST_PAIR_UP, this.nickname);
+        }
+    }
+
+    private void onReceiveCancelPairUp(String received) {
+        // gỡ cờ đang đợi ghép cặp
+        this.isWaiting = false;
+
+        // báo cho client để tắt giao diện đang đợi ghép cặp
+        sendData(DataType.CANCEL_PAIR_UP, null);
+    }
+
+    private void onReceivePairUpResponse(String received) {
+        // save accept pair status
+        this.acceptPairUpStatus = received;
+
+        // if stranger has left
+        if (stranger == null) {
+            sendData(DataType.RESULT_PAIR_UP, "failed;" + Code.STRANGER_LEAVE);
+            return;
+        }
+
+        // if one decline
+        if (received.equals("no")) {
+            // send data
+            this.sendData(DataType.RESULT_PAIR_UP, "failed;" + Code.YOU_CHOOSE_NO);
+            stranger.sendData(DataType.RESULT_PAIR_UP, "failed;" + Code.STRANGER_CHOOSE_NO);
+
+            // reset acceptPairUpStatus
+            this.acceptPairUpStatus = "";
+            stranger.acceptPairUpStatus = "";
+        }
+
+        // if both accept
+        if (received.equals("yes") && stranger.acceptPairUpStatus.equals("yes")) {
+            // send success pair match
+            this.sendData(DataType.RESULT_PAIR_UP, "success");
+            stranger.sendData(DataType.RESULT_PAIR_UP, "success");
+
+            // reset acceptPairMatchStatus
+            this.acceptPairUpStatus = "";
+            stranger.acceptPairUpStatus = "";
+        }
     }
 
     private void onReceiveLogout(String received) {
@@ -201,11 +277,11 @@ public class Client implements Runnable {
         isWaiting = waiting;
     }
 
-    public String getAcceptPairingStatus() {
-        return acceptPairingStatus;
+    public String getAcceptPairUpStatus() {
+        return acceptPairUpStatus;
     }
 
-    public void setAcceptPairingStatus(String acceptPairingStatus) {
-        this.acceptPairingStatus = acceptPairingStatus;
+    public void setAcceptPairUpStatus(String acceptPairUpStatus) {
+        this.acceptPairUpStatus = acceptPairUpStatus;
     }
 }

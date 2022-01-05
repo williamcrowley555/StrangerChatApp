@@ -30,6 +30,40 @@ public class LoginGUI extends JFrame {
         pgbLoading.setVisible(false);
     }
 
+    public void connectToServer(String hostname, int port, String nickname) {
+        new Thread(() -> {
+            // establish connection
+            boolean isConnected = RunClient.socketHandler.connect(hostname, port, nickname);
+
+            // check result
+            if (isConnected) {
+                onSuccess();
+            } else {
+                String failedMsg = "Kết nối thất bại!";
+                onFailed(failedMsg);
+            }
+        }).start();
+    }
+
+    private void onSuccess() {
+        // Kết nối thành công nhưng vẫn chờ server gửi thông báo đã nhận secret key
+        // Chuyển qua GUI khi client nhận được phản hồi từ server
+        // => code mở GUI được thực hiện ở socket handler, lúc listen nhận được secret key từ server
+
+        setLoading(true, "Đang xử lý...");
+    }
+
+    private void onFailed(String failedMsg) {
+        setLoading(false, null);
+        JOptionPane.showMessageDialog(this, failedMsg, "Lỗi kết nối", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public void setLoading(boolean isLoading, String btnText) {
+        pgbLoading.setVisible(isLoading);
+        btnLogin.setEnabled(!isLoading);
+        btnLogin.setText(isLoading ? btnText : "Tham gia");
+    }
+
     private void initComponents() {
         txtNickname.addKeyListener(new KeyListener() {
             @Override
@@ -74,39 +108,5 @@ public class LoginGUI extends JFrame {
                 }
             }
         });
-    }
-
-    public void connectToServer(String hostname, int port, String nickname) {
-        new Thread(() -> {
-            // establish connection
-            boolean isConnected = RunClient.socketHandler.connect(hostname, port, nickname);
-
-            // check result
-            if (isConnected) {
-                onSuccess();
-            } else {
-                String failedMsg = "Kết nối thất bại!";
-                onFailed(failedMsg);
-            }
-        }).start();
-    }
-
-    private void onSuccess() {
-        // Kết nối thành công nhưng vẫn chờ server gửi thông báo đã nhận secret key
-        // Chuyển qua GUI khi client nhận được phản hồi từ server
-        // => code mở GUI được thực hiện ở socket handler, lúc listen nhận được secret key từ server
-
-        setLoading(true, "Đang xử lý...");
-    }
-
-    private void onFailed(String failedMsg) {
-        setLoading(false, null);
-        JOptionPane.showMessageDialog(this, failedMsg, "Lỗi kết nối", JOptionPane.ERROR_MESSAGE);
-    }
-
-    public void setLoading(boolean isLoading, String btnText) {
-        pgbLoading.setVisible(isLoading);
-        btnLogin.setEnabled(!isLoading);
-        btnLogin.setText(isLoading ? btnText : "Tham gia");
     }
 }
