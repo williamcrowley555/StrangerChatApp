@@ -7,6 +7,8 @@ public enum DataType {
     PAIR_UP_WAITING,
     REQUEST_PAIR_UP,
     RESULT_PAIR_UP,
+    JOIN_CHAT_ROOM,
+    CLOSE_CHAT_ROOM,
     ERROR,
 
 //    Client Request
@@ -15,6 +17,7 @@ public enum DataType {
     PAIR_UP,
     CANCEL_PAIR_UP,
     PAIR_UP_RESPONSE,
+    LEAVE_CHAT_ROOM,
     LOGOUT,
 
 //    Connection state

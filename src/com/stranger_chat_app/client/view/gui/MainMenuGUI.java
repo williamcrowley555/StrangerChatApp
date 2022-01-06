@@ -15,7 +15,6 @@ public class MainMenuGUI extends JFrame {
     private JPanel pnlWaiting;
     private JButton btnLogout;
     private JLabel lblWaiting;
-    private JProgressBar progressBar1;
     private JButton btnCancelPairUp;
     private JPanel pnlStrangerFound;
     private JButton btnDecline;
@@ -24,6 +23,7 @@ public class MainMenuGUI extends JFrame {
     private JLabel lblPairUpCountdown;
     private JPanel pnlPairUp;
     private JButton btnPairUp;
+    private JProgressBar pgbLoading;
 
     CountdownTimer acceptPairUpTimer;
     CountdownTimer waitingPairUpTimer;
@@ -33,7 +33,7 @@ public class MainMenuGUI extends JFrame {
 
     public MainMenuGUI() {
         super();
-        setTitle("Màn hình chính - " + RunClient.socketHandler.getNickname());
+        setTitle("Màn hình chính - Nickname: " + RunClient.socketHandler.getNickname());
         setContentPane(pnlMain);
         setSize(540, 340);
         setLocationRelativeTo(null);
@@ -62,6 +62,7 @@ public class MainMenuGUI extends JFrame {
                 startWaitingPairUpTimer();
                 stopAcceptPairUpTimer();
                 pnlStrangerFound.setVisible(false);
+                btnPairUp.setEnabled(false);
                 btnLogout.setEnabled(false);
                 break;
 
@@ -70,6 +71,7 @@ public class MainMenuGUI extends JFrame {
                 startAcceptPairUpTimer();
                 isAcceptingPairUp = false;
                 pnlWaiting.setVisible(false);
+                btnPairUp.setEnabled(false);
                 btnLogout.setEnabled(false);
                 break;
 
@@ -78,6 +80,7 @@ public class MainMenuGUI extends JFrame {
                 pnlWaiting.setVisible(false);
                 btnAccept.setEnabled(false);
                 btnDecline.setEnabled(false);
+                btnPairUp.setEnabled(false);
                 btnLogout.setEnabled(false);
                 lblWaiting.setText("Đang chờ đối phương chấp nhận..");
                 break;
@@ -153,6 +156,17 @@ public class MainMenuGUI extends JFrame {
     }
 
     private void initComponents() {
+        btnLogout.setOpaque(false);
+        btnLogout.setContentAreaFilled(false);
+        btnLogout.setBorder(null);
+        btnLogout.setBorderPainted(false);
+
+        // set a transparent backgound for all child panels
+        pnlLogout.setOpaque(false);
+        pnlWaiting.setOpaque(false);
+        pnlStrangerFound.setOpaque(false);
+        pnlPairUp.setOpaque(false);
+
         btnLogout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

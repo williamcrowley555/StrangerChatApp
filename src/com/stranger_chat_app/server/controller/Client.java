@@ -80,6 +80,10 @@ public class Client implements Runnable {
                             onReceivePairUpResponse(receivedContent);
                             break;
 
+                        case LEAVE_CHAT_ROOM:
+                            onReceiveLeaveChatRoom(receivedContent);
+                            break;
+
                         case LOGOUT:
                             System.out.println(nickname + " has exited");
                             onReceiveLogout(receivedContent);
@@ -229,10 +233,22 @@ public class Client implements Runnable {
             this.sendData(DataType.RESULT_PAIR_UP, "success");
             stranger.sendData(DataType.RESULT_PAIR_UP, "success");
 
+            // send join chat room status to client
+            sendData(DataType.JOIN_CHAT_ROOM, stranger.nickname);
+            stranger.sendData(DataType.JOIN_CHAT_ROOM, this.nickname);
+
             // reset acceptPairMatchStatus
             this.acceptPairUpStatus = "";
             stranger.acceptPairUpStatus = "";
         }
+    }
+
+    private void onReceiveLeaveChatRoom(String received) {
+        // Notify the stranger that you have exited
+        this.stranger.sendData(DataType.CLOSE_CHAT_ROOM, this.nickname + " đã thoát phòng");
+
+        // TODO leave chat room
+        sendData(DataType.LEAVE_CHAT_ROOM, null);
     }
 
     private void onReceiveLogout(String received) {
@@ -240,8 +256,6 @@ public class Client implements Runnable {
         this.nickname = null;
         this.isWaiting = false;
 
-        // TODO leave room
-        // TODO broadcast to all clients
         sendData(DataType.LOGOUT, null);
     }
 

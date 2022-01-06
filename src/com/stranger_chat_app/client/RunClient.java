@@ -2,6 +2,7 @@ package com.stranger_chat_app.client;
 
 import com.stranger_chat_app.client.controller.SocketHandler;
 import com.stranger_chat_app.client.view.enums.GUIName;
+import com.stranger_chat_app.client.view.gui.ChatRoomGUI;
 import com.stranger_chat_app.client.view.gui.LoginGUI;
 import com.stranger_chat_app.client.view.gui.MainMenuGUI;
 
@@ -10,6 +11,7 @@ public class RunClient {
 //    GUIs
     public static LoginGUI loginGUI;
     public static MainMenuGUI mainMenuGUI;
+    public static ChatRoomGUI chatRoomGUI;
 
     // controller
     public static SocketHandler socketHandler;
@@ -23,6 +25,7 @@ public class RunClient {
     public void initGUIs() {
         loginGUI = new LoginGUI();
         mainMenuGUI = new MainMenuGUI();
+        chatRoomGUI = new ChatRoomGUI();
     }
 
     public static void openGUI(GUIName guiName) {
@@ -36,6 +39,11 @@ public class RunClient {
                 case MAIN_MENU:
                     mainMenuGUI = new MainMenuGUI();
                     mainMenuGUI.setVisible(true);
+                    break;
+
+                case CHAT_ROOM:
+                    chatRoomGUI = new ChatRoomGUI();
+                    chatRoomGUI.setVisible(true);
                     break;
 
                 default:
@@ -53,6 +61,10 @@ public class RunClient {
 
                 case MAIN_MENU:
                     mainMenuGUI.dispose();
+                    break;
+
+                case CHAT_ROOM:
+                    chatRoomGUI.dispose();
                     break;
 
                 default:

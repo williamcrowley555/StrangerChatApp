@@ -107,6 +107,18 @@ public class SocketHandler {
                             onReceiveResultPairUp(receivedContent);
                             break;
 
+                        case JOIN_CHAT_ROOM:
+                            onReceiveJoinChatRoom(receivedContent);
+                            break;
+
+                        case LEAVE_CHAT_ROOM:
+                            onReceiveLeaveChatRoom(receivedContent);
+                            break;
+
+                        case CLOSE_CHAT_ROOM:
+                            onReceiveCloseChatRoom(receivedContent);
+                            break;
+
                         case LOGOUT:
                             onReceiveLogout(receivedContent);
                             isRunning = false;
@@ -265,6 +277,34 @@ public class SocketHandler {
         RunClient.mainMenuGUI.foundStranger(received);
     }
 
+    private void onReceiveJoinChatRoom(String received) {
+        // change GUI
+        RunClient.closeGUI(GUIName.MAIN_MENU);
+        RunClient.openGUI(GUIName.CHAT_ROOM);
+        RunClient.chatRoomGUI.setTitle("Trò chuyện - Nickname: " + this.nickname);
+        RunClient.chatRoomGUI.setClients(this.nickname, received);
+
+    }
+
+    private void onReceiveLeaveChatRoom(String received) {
+        // change GUI
+        RunClient.closeGUI(GUIName.CHAT_ROOM);
+        RunClient.openGUI(GUIName.MAIN_MENU);
+    }
+
+    private void onReceiveCloseChatRoom(String received) {
+        // change GUI
+        RunClient.closeGUI(GUIName.CHAT_ROOM);
+        RunClient.openGUI(GUIName.MAIN_MENU);
+
+        // show notification
+        JOptionPane.showMessageDialog(
+                RunClient.mainMenuGUI,
+                "Kết thúc trò chuyện do " + received, "Đóng",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
     public void acceptPairUp() {
         sendData(DataType.PAIR_UP_RESPONSE, "yes");
     }
@@ -275,6 +315,10 @@ public class SocketHandler {
 
     public void cancelPairUp() {
         sendData(DataType.CANCEL_PAIR_UP, null);
+    }
+
+    public void leaveChatRoom() {
+        sendData(DataType.LEAVE_CHAT_ROOM, null);
     }
 
     public void logout() {
