@@ -40,7 +40,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="fe8b8" class="javax.swing.JTextPane" binding="MessageArea">
+              <component id="fe8b8" class="javax.swing.JTextPane" binding="messageArea">
                 <constraints/>
                 <properties>
                   <contentType value="text/html"/>

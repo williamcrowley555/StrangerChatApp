@@ -8,7 +8,7 @@ import java.util.List;
 public class MessageStore {
     private static List<Message> messages = new ArrayList<>();
 
-    public static void saveMessage(Message msg) {
+    public static void add(Message msg) {
         messages.add(msg);
     }
 

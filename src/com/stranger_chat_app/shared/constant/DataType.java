@@ -17,6 +17,7 @@ public enum DataType {
     PAIR_UP,
     CANCEL_PAIR_UP,
     PAIR_UP_RESPONSE,
+    CHAT_MESSAGE,
     LEAVE_CHAT_ROOM,
     LOGOUT,
 

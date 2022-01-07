@@ -5,6 +5,7 @@ import com.stranger_chat_app.client.view.enums.GUIName;
 import com.stranger_chat_app.client.view.enums.MainMenuState;
 import com.stranger_chat_app.shared.constant.DataType;
 import com.stranger_chat_app.shared.model.Data;
+import com.stranger_chat_app.shared.model.Message;
 import com.stranger_chat_app.shared.security.AESUtil;
 import com.stranger_chat_app.shared.security.RSAUtil;
 
@@ -109,6 +110,10 @@ public class SocketHandler {
 
                         case JOIN_CHAT_ROOM:
                             onReceiveJoinChatRoom(receivedContent);
+                            break;
+
+                        case CHAT_MESSAGE:
+                            onReceiveChatMessage(receivedContent);
                             break;
 
                         case LEAVE_CHAT_ROOM:
@@ -281,9 +286,13 @@ public class SocketHandler {
         // change GUI
         RunClient.closeGUI(GUIName.MAIN_MENU);
         RunClient.openGUI(GUIName.CHAT_ROOM);
-        RunClient.chatRoomGUI.setTitle("Trò chuyện - Nickname: " + this.nickname);
         RunClient.chatRoomGUI.setClients(this.nickname, received);
+    }
 
+    private void onReceiveChatMessage(String received) {
+        // convert received JSON message to Message
+        Message message = Message.parse(received);
+        RunClient.chatRoomGUI.addChatMessage(message);
     }
 
     private void onReceiveLeaveChatRoom(String received) {
@@ -315,6 +324,10 @@ public class SocketHandler {
 
     public void cancelPairUp() {
         sendData(DataType.CANCEL_PAIR_UP, null);
+    }
+
+    public void sendChatMessage(Message message) {
+        sendData(DataType.CHAT_MESSAGE, message.toJSONString());
     }
 
     public void leaveChatRoom() {

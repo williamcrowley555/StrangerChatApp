@@ -4,6 +4,7 @@ import com.stranger_chat_app.server.RunServer;
 import com.stranger_chat_app.shared.constant.Code;
 import com.stranger_chat_app.shared.constant.DataType;
 import com.stranger_chat_app.shared.model.Data;
+import com.stranger_chat_app.shared.model.Message;
 import com.stranger_chat_app.shared.security.AESUtil;
 import com.stranger_chat_app.shared.security.RSAUtil;
 
@@ -78,6 +79,10 @@ public class Client implements Runnable {
 
                         case PAIR_UP_RESPONSE:
                             onReceivePairUpResponse(receivedContent);
+                            break;
+
+                        case CHAT_MESSAGE:
+                            onReceiveChatMessage(receivedContent);
                             break;
 
                         case LEAVE_CHAT_ROOM:
@@ -243,8 +248,18 @@ public class Client implements Runnable {
         }
     }
 
+    private void onReceiveChatMessage(String received) {
+        Message message = Message.parse(received);
+        Client stranger = RunServer.clientManager.find(message.getRecipient());
+
+        if (stranger != null) {
+            // send message to stranger
+            stranger.sendData(DataType.CHAT_MESSAGE, received);
+        }
+    }
+
     private void onReceiveLeaveChatRoom(String received) {
-        // Notify the stranger that you have exited
+        // notify the stranger that you have exited
         this.stranger.sendData(DataType.CLOSE_CHAT_ROOM, this.nickname + " đã thoát phòng");
 
         // TODO leave chat room

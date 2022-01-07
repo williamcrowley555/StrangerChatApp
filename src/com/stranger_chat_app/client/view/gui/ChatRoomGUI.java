@@ -1,14 +1,20 @@
 package com.stranger_chat_app.client.view.gui;
 
 import com.stranger_chat_app.client.RunClient;
+import com.stranger_chat_app.client.model.MessageStore;
+import com.stranger_chat_app.shared.model.Message;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
 
 public class ChatRoomGUI extends JFrame {
     private JScrollPane scrollPanelMsg;
-    private JTextPane MessageArea;
+    private JTextPane messageArea;
     private JPanel inputPanel;
     private JTextArea txtMessage;
     private JButton btnSend;
@@ -16,22 +22,56 @@ public class ChatRoomGUI extends JFrame {
     private JPanel pnlMain;
     private JPanel pnlHeader;
     private JPanel pnlChat;
-    private JLabel lblNickname;
+    private JLabel lblStranger;
     private JLabel lblStatus;
     private HTMLDocument doc;
 
     private String you;
     private String stranger;
 
+    private String cssLocalMessage = "position:relative;\n" +
+            "max-width: 40%;\n" +
+            "padding:5px 10px;\n" +
+            "margin: 1em 2em;\n" +
+            "color: white; \n" +
+            "background: #3498DB;\n" +
+            "border-radius:25px;\n" +
+            "float: right;\n" +
+            "clear: both;";
+    private String cssRemoteMessage = "position:relative;\n" +
+            "max-width: 40%;\n" +
+            "padding:5px 10px;\n" +
+            "margin: 0.3em 2em;\n" +
+            "color:white; \n" +
+            "background: #26A65B;\n" +
+            "border-radius:25px;\n" +
+            "float: left;\n" +
+            "clear: both;";
+
     public ChatRoomGUI() {
         super();
-        setTitle("Trò chuyện - Nickname: ");
+        setTitle("Trò chuyện - Bạn: " + RunClient.socketHandler.getNickname());
         setContentPane(pnlMain);
         setSize(600, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         initComponents();
+    }
+
+    public void addChatMessage(Message message) {
+        MessageStore.add(message);
+
+        try {
+            doc.insertAfterEnd(doc.getCharacterElement(doc.getLength()),
+                    "<div style='" + cssRemoteMessage + "'><p>" + message.getContent() + "</p></div><br/>");
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        messageArea.setCaretPosition(messageArea.getDocument().getLength());
     }
 
     private void initComponents() {
@@ -44,8 +84,8 @@ public class ChatRoomGUI extends JFrame {
         topPanel.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
         JPanel userPanel = new JPanel(new GridLayout(0, 1));
 
-        lblNickname = new JLabel();
-        lblNickname.setOpaque(true);
+        lblStranger = new JLabel();
+        lblStranger.setOpaque(true);
         lblStatus = new JLabel();
         lblStatus.setText("Online");
         lblStatus.setForeground(Color.GREEN);
@@ -56,12 +96,12 @@ public class ChatRoomGUI extends JFrame {
         icon.setIcon(imageIcon);
         icon.setOpaque(true);
 
-        userPanel.add(lblNickname);
+        userPanel.add(lblStranger);
         userPanel.add(lblStatus);
         topPanel.add(userPanel, BorderLayout.CENTER);
         topPanel.add(icon, BorderLayout.WEST);
 
-        doc = (HTMLDocument) MessageArea.getStyledDocument();
+        doc = (HTMLDocument) messageArea.getStyledDocument();
 
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -73,12 +113,37 @@ public class ChatRoomGUI extends JFrame {
                 }
             }
         });
+
+        btnSend.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String content = txtMessage.getText();
+
+                if(!content.equals("")) {
+                    Message message = new Message(you, stranger, content);
+
+                    RunClient.socketHandler.sendChatMessage(message);
+                    txtMessage.setText("");
+
+                    try {
+                        doc.insertAfterEnd(doc.getCharacterElement(doc.getLength()),
+                                "<div style='background-color: #ebebeb; margin-top: 10px;'><pre style='color: #000;'>"
+                                        + "<span style='color: red;'>" + message.getSender() + ": </span>" + message.getContent() + "</pre></div><br/>");
+                    } catch (BadLocationException | IOException badLocationException) {
+                        badLocationException.printStackTrace();
+                    }
+
+                    MessageStore.add(message);
+                    messageArea.setCaretPosition(messageArea.getDocument().getLength());
+                }
+            }
+        });
     }
 
     public void setClients(String you, String stranger) {
         this.you = you;
         this.stranger = stranger;
-        this.lblNickname.setText(stranger);
+        this.lblStranger.setText(stranger);
     }
 
     public String getYou() {

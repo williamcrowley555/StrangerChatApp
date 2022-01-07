@@ -33,7 +33,7 @@ public class MainMenuGUI extends JFrame {
 
     public MainMenuGUI() {
         super();
-        setTitle("Màn hình chính - Nickname: " + RunClient.socketHandler.getNickname());
+        setTitle("Màn hình chính - Bạn: " + RunClient.socketHandler.getNickname());
         setContentPane(pnlMain);
         setSize(540, 340);
         setLocationRelativeTo(null);
