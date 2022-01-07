@@ -64,7 +64,8 @@ public class ChatRoomGUI extends JFrame {
 
         try {
             doc.insertAfterEnd(doc.getCharacterElement(doc.getLength()),
-                    "<div style='" + cssRemoteMessage + "'><p>" + message.getContent() + "</p></div><br/>");
+                    "<div style='background-color: #ebebeb; margin: 0 0 10px 0;'><pre style='color: #000;'>"
+                            + "<span style='color: red;'>" + message.getSender() + ": </span>" + message.getContent() + "</pre></div><br/>");
         } catch (BadLocationException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -102,6 +103,7 @@ public class ChatRoomGUI extends JFrame {
         topPanel.add(icon, BorderLayout.WEST);
 
         doc = (HTMLDocument) messageArea.getStyledDocument();
+        messageArea.setText("<br/>");
 
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -127,8 +129,8 @@ public class ChatRoomGUI extends JFrame {
 
                     try {
                         doc.insertAfterEnd(doc.getCharacterElement(doc.getLength()),
-                                "<div style='background-color: #ebebeb; margin-top: 10px;'><pre style='color: #000;'>"
-                                        + "<span style='color: red;'>" + message.getSender() + ": </span>" + message.getContent() + "</pre></div><br/>");
+                                "<div style='background-color: #05728F; margin: 0 0 10px 0;'><pre style='color: #fff'>"
+                                        + "<span style='color: yellow;'>Bạn: </span>" + content + "</pre></div><br/>");
                     } catch (BadLocationException | IOException badLocationException) {
                         badLocationException.printStackTrace();
                     }
