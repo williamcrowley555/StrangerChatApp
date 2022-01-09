@@ -6,6 +6,8 @@ import com.stranger_chat_app.client.view.gui.ChatRoomGUI;
 import com.stranger_chat_app.client.view.gui.LoginGUI;
 import com.stranger_chat_app.client.view.gui.MainMenuGUI;
 
+import javax.swing.*;
+
 public class RunClient {
 
 //    GUIs
@@ -18,6 +20,14 @@ public class RunClient {
 
     public RunClient() {
         socketHandler = new SocketHandler();
+
+        // Customize LookAndFeel UI
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
         initGUIs();
         openGUI(GUIName.LOGIN);
     }
