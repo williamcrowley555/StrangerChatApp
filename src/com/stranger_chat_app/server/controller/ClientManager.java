@@ -3,6 +3,7 @@ package com.stranger_chat_app.server.controller;
 import com.stranger_chat_app.shared.constant.DataType;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 public class ClientManager {
     ArrayList<Client> clients;
@@ -27,6 +28,14 @@ public class ClientManager {
         return false;
     }
 
+    public void removeRejectedClient (String nickname) {
+        for (Client client : clients) {
+            if (client.getRejectedClients().contains(nickname)) {
+                client.getRejectedClients().remove(nickname);
+            }
+        }
+    }
+
     public Client find(String nickname) {
         for (Client client : clients) {
             if (client.getNickname() != null && client.getNickname().equals(nickname)) {
@@ -46,6 +55,21 @@ public class ClientManager {
         for (Client client : clients) {
             if (client.isWaiting()) {
                 return client;
+            }
+        }
+
+        return null;
+    }
+
+    public Client findWaitingClient(Client currentClient, Set<String> excludedNicknames) {
+        for (Client client : clients) {
+            if (client.isWaiting()) {
+                if (excludedNicknames.contains(client.getNickname()))
+                    continue;
+                else if (client.getRejectedClients().contains(currentClient.getNickname()))
+                    continue;
+                else
+                    return client;
             }
         }
 

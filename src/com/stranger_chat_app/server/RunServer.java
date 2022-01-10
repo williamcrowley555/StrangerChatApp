@@ -60,7 +60,7 @@ public class RunServer {
                 }
             }
 
-            System.out.println("Shuting down executor...");
+            System.out.println("Shut down executor...");
             executor.shutdownNow();
 
         } catch (IOException ex) {

@@ -82,7 +82,7 @@ public class MainMenuGUI extends JFrame {
                 btnDecline.setEnabled(false);
                 btnPairUp.setEnabled(false);
                 btnLogout.setEnabled(false);
-                lblWaiting.setText("Đang chờ đối phương chấp nhận..");
+                lblWaiting.setText("Đang chờ phản hồi từ đối phương..");
                 break;
         }
     }
@@ -193,7 +193,6 @@ public class MainMenuGUI extends JFrame {
         btnDecline.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setDisplayState(MainMenuState.DEFAULT);
                 RunClient.socketHandler.declinePairUp();
             }
         });

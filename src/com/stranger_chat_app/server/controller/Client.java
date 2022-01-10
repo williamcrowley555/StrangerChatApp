@@ -27,11 +27,12 @@ public class Client implements Runnable {
     private PublicKey publicKey;
     private SecretKey secretKey;
 
-    String nickname;
-    Client stranger;
+    private String nickname;
+    private Client stranger;
+    private Set<String> rejectedClients = new HashSet<>();
 
-    boolean isWaiting = false;
-    String acceptPairUpStatus = "";     // value: "yes", "no", ""
+    private boolean isWaiting = false;
+    private String acceptPairUpStatus = "";     // value: "yes", "no", ""
 
     public Client(Socket clientSocket) throws IOException {
         this.clientSocket = clientSocket;
@@ -192,7 +193,7 @@ public class Client implements Runnable {
 
     private void onReceivePairUp(String received) {
         // Kiếm có ai khác đang đợi ghép cặp không
-        Client stranger = RunServer.clientManager.findWaitingClient();
+        Client stranger = RunServer.clientManager.findWaitingClient(this, rejectedClients);
 
         if (stranger == null) {
             // đặt cờ là đang đợi ghép cặp
@@ -237,13 +238,16 @@ public class Client implements Runnable {
 
         // if one decline
         if (received.equals("no")) {
-            // send data
-            this.sendData(DataType.RESULT_PAIR_UP, "failed;" + Code.YOU_CHOOSE_NO);
-            stranger.sendData(DataType.RESULT_PAIR_UP, "failed;" + Code.STRANGER_CHOOSE_NO);
+            // add rejected client to list
+            this.rejectedClients.add(stranger.getNickname());
 
             // reset acceptPairUpStatus
             this.acceptPairUpStatus = "";
             stranger.acceptPairUpStatus = "";
+
+            // send data
+            this.sendData(DataType.RESULT_PAIR_UP, "failed;" + Code.YOU_CHOOSE_NO);
+            stranger.sendData(DataType.RESULT_PAIR_UP, "failed;" + Code.STRANGER_CHOOSE_NO);
         }
 
         // if both accept
@@ -273,6 +277,10 @@ public class Client implements Runnable {
     }
 
     private void onReceiveLeaveChatRoom(String received) {
+        // reset rejected clients of both
+        this.rejectedClients.clear();
+        this.stranger.rejectedClients.clear();
+
         // notify the stranger that you have exited
         this.stranger.sendData(DataType.CLOSE_CHAT_ROOM, this.nickname + " đã thoát phòng");
 
@@ -281,9 +289,13 @@ public class Client implements Runnable {
     }
 
     private void onReceiveLogout(String received) {
-        // reset nickname and waiting status
+        // remove this client nickname from the rejected list of all clients
+        RunServer.clientManager.removeRejectedClient(this.nickname);
+
+        // reset all infos
         this.nickname = null;
         this.isWaiting = false;
+        this.rejectedClients.clear();
 
         sendData(DataType.LOGOUT, null);
     }
@@ -318,6 +330,14 @@ public class Client implements Runnable {
 
     public void setStranger(Client stranger) {
         this.stranger = stranger;
+    }
+
+    public Set<String> getRejectedClients() {
+        return rejectedClients;
+    }
+
+    public void setRejectedClients(Set<String> rejectedClients) {
+        this.rejectedClients = rejectedClients;
     }
 
     public boolean isWaiting() {

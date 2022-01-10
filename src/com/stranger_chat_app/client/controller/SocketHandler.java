@@ -256,20 +256,26 @@ public class SocketHandler {
         String[] splitted = received.split(";");
         String status = splitted[0];
 
-        // reset display state of main menu
-        RunClient.mainMenuGUI.setDisplayState(MainMenuState.DEFAULT);
-
         if (status.equals("failed")) {
             String failedMsg = splitted[1];
-            JOptionPane.showMessageDialog(RunClient.mainMenuGUI, failedMsg, "Ghép đôi thất bại", JOptionPane.ERROR_MESSAGE);
+            int option = JOptionPane.showOptionDialog(RunClient.mainMenuGUI, failedMsg + ". Tiếp tục ghép đôi?", "Ghép đôi thất bại",
+                                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE, null, null, null);
 
+            if(option == JOptionPane.OK_OPTION) {
+                // continue pairing
+                pairUp();
+                return;
+            }
+
+            // stop pairing
+            // reset display state of main menu
+            RunClient.mainMenuGUI.setDisplayState(MainMenuState.DEFAULT);
         } else if (status.equals("success")) {
-             System.out.println("Ghép đôi thành công");
-        }
-    }
+            // reset display state of main menu
+            RunClient.mainMenuGUI.setDisplayState(MainMenuState.DEFAULT);
 
-    public void pairUp() {
-        sendData(DataType.PAIR_UP, null);
+            System.out.println("Ghép đôi thành công");
+        }
     }
 
     private void onReceivePairUpWaiting(String received) {
@@ -333,6 +339,10 @@ public class SocketHandler {
 
     public void login(String nickname) {
         sendData(DataType.LOGIN, nickname);
+    }
+
+    public void pairUp() {
+        sendData(DataType.PAIR_UP, null);
     }
 
     public void acceptPairUp() {
