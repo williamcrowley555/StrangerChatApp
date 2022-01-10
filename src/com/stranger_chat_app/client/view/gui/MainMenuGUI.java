@@ -37,7 +37,7 @@ public class MainMenuGUI extends JFrame {
         setContentPane(pnlMain);
         setSize(540, 340);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setResizable(false);
 
         initComponents();
@@ -160,12 +160,6 @@ public class MainMenuGUI extends JFrame {
         btnLogout.setContentAreaFilled(false);
         btnLogout.setBorder(null);
         btnLogout.setBorderPainted(false);
-
-        // set a transparent backgound for all child panels
-        pnlLogout.setOpaque(false);
-        pnlWaiting.setOpaque(false);
-        pnlStrangerFound.setOpaque(false);
-        pnlPairUp.setOpaque(false);
 
         btnLogout.addActionListener(new ActionListener() {
             @Override

@@ -34,7 +34,7 @@ public class SocketHandler {
     PublicKey publicKey;
     SecretKey secretKey;
 
-    public boolean connect(String hostname, int port, String nickname) {
+    public boolean connect(String hostname, int port) {
         try {
             // establish the connection with server port
             socket = new Socket(hostname, port);
@@ -45,9 +45,6 @@ public class SocketHandler {
             this.out.flush();
             this.in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 
-            // save nickname
-            this.nickname = nickname;
-
             // close old listener
             if (listener != null && listener.isAlive()) {
                 listener.interrupt();
@@ -57,7 +54,7 @@ public class SocketHandler {
             listener = new Thread(this::listen);
             listener.start();
 
-            // connect success
+            // connect successfully
             return true;
 
         } catch (IOException e) {
@@ -72,8 +69,6 @@ public class SocketHandler {
         String receivedContent = null;
 
         try {
-            sendClientInfo();
-
             while (isRunning) {
                 receivedData = (Data) in.readObject();
 
@@ -90,6 +85,10 @@ public class SocketHandler {
 
                         case RECEIVED_SECRET_KEY:
                             onReceivedSecretKey(receivedContent);
+                            break;
+
+                        case LOGIN:
+                            onReceiveLogin(receivedContent);
                             break;
 
                         case PAIR_UP_WAITING:
@@ -126,6 +125,10 @@ public class SocketHandler {
 
                         case LOGOUT:
                             onReceiveLogout(receivedContent);
+                            break;
+
+                        case EXIT:
+                            onReceiveExit(receivedContent);
                             isRunning = false;
                             break;
                     }
@@ -226,18 +229,27 @@ public class SocketHandler {
         }
     }
 
-    private void sendClientInfo() {
-        if (this.nickname != null) {
-            sendData(DataType.CLIENT_INFO, this.nickname);
-            sendData(DataType.CLIENT_INFO, this.nickname);
-        }
+    private void onReceivedSecretKey(String received) {
+        // tắt loading và cho phép client bắt đầu đăng nhập
+        RunClient.loginGUI.setLoading(false, null);
     }
 
-    private void onReceivedSecretKey(String received) {
-        // tắt Login GUI khi client nhận được phản hồi "đã nhận được secret key" từ server
-        RunClient.closeGUI(GUIName.LOGIN);
-        // mở GUI
-        RunClient.openGUI(GUIName.MAIN_MENU);
+    private void onReceiveLogin(String received) {
+        String[] splitted = received.split(";");
+        String status = splitted[0];
+
+        if (status.equals("failed")) {
+            String failedMsg = splitted[1];
+            RunClient.loginGUI.onFailed(failedMsg);
+
+        } else if (status.equals("success")) {
+            this.nickname = splitted[1];
+
+            // tắt Login GUI khi client đăng nhập thành công
+            RunClient.closeGUI(GUIName.LOGIN);
+            // mở Main Menu GUI
+            RunClient.openGUI(GUIName.MAIN_MENU);
+        }
     }
 
     private void onReceiveResultPairUp(String received) {
@@ -254,15 +266,6 @@ public class SocketHandler {
         } else if (status.equals("success")) {
              System.out.println("Ghép đôi thành công");
         }
-    }
-
-    private void onReceiveLogout(String received) {
-        // xóa nickname
-        this.nickname = null;
-
-        // chuyển sang login GUI
-        RunClient.closeAllGUIs();
-        RunClient.openGUI(GUIName.LOGIN);
     }
 
     public void pairUp() {
@@ -314,6 +317,24 @@ public class SocketHandler {
         );
     }
 
+    private void onReceiveLogout(String received) {
+        // xóa nickname
+        this.nickname = null;
+
+        // chuyển sang login GUI
+        RunClient.closeGUI(GUIName.MAIN_MENU);
+        RunClient.openGUI(GUIName.LOGIN);
+    }
+
+    private void onReceiveExit(String received) {
+        // đóng tất cả GUIs
+        RunClient.closeAllGUIs();
+    }
+
+    public void login(String nickname) {
+        sendData(DataType.LOGIN, nickname);
+    }
+
     public void acceptPairUp() {
         sendData(DataType.PAIR_UP_RESPONSE, "yes");
     }
@@ -335,11 +356,11 @@ public class SocketHandler {
     }
 
     public void logout() {
-        // xóa keys
-        this.publicKey = null;
-        this.secretKey = null;
-
         sendData(DataType.LOGOUT, null);
+    }
+
+    public void exit() {
+        sendData(DataType.EXIT, null);
     }
 
     public String getNickname() {

@@ -12,7 +12,7 @@ public enum DataType {
     ERROR,
 
 //    Client Request
-    CLIENT_INFO,
+    LOGIN,
     SECRET_KEY,
     PAIR_UP,
     CANCEL_PAIR_UP,
@@ -20,7 +20,5 @@ public enum DataType {
     CHAT_MESSAGE,
     LEAVE_CHAT_ROOM,
     LOGOUT,
-
-//    Connection state
-    EXIT
+    EXIT,
 }

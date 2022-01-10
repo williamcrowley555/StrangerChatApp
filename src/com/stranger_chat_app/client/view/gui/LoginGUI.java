@@ -30,32 +30,9 @@ public class LoginGUI extends JFrame {
         pgbLoading.setVisible(false);
     }
 
-    public void connectToServer(String hostname, int port, String nickname) {
-        new Thread(() -> {
-            // establish connection
-            boolean isConnected = RunClient.socketHandler.connect(hostname, port, nickname);
-
-            // check result
-            if (isConnected) {
-                onSuccess();
-            } else {
-                String failedMsg = "Kết nối thất bại!";
-                onFailed(failedMsg);
-            }
-        }).start();
-    }
-
-    private void onSuccess() {
-        // Kết nối thành công nhưng vẫn chờ server gửi thông báo đã nhận secret key
-        // Chuyển qua GUI khi client nhận được phản hồi từ server
-        // => code mở GUI được thực hiện ở socket handler, lúc listen nhận được secret key từ server
-
-        setLoading(true, "Đang xử lý...");
-    }
-
-    private void onFailed(String failedMsg) {
+    public void onFailed(String failedMsg) {
         setLoading(false, null);
-        JOptionPane.showMessageDialog(this, failedMsg, "Lỗi kết nối", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, failedMsg, "Lỗi đăng nhập", JOptionPane.ERROR_MESSAGE);
     }
 
     public void setLoading(boolean isLoading, String btnText) {
@@ -65,6 +42,13 @@ public class LoginGUI extends JFrame {
     }
 
     private void initComponents() {
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                RunClient.socketHandler.exit();
+            }
+        });
+
         txtNickname.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -80,9 +64,10 @@ public class LoginGUI extends JFrame {
                     } else if (nickname.length() > 20) {
                         JOptionPane.showMessageDialog(pnlMain, "Nickname không được đặt quá 20 ký tự", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                     } else {
-                        String hostname = "localhost";
-                        int port = 5004;
-                        connectToServer(hostname, port, nickname);
+                        // Chờ server kiểm tra đăng nhập
+                        setLoading(true, "Đang xử lý...");
+
+                        RunClient.socketHandler.login(nickname);
                     }
                 }
             }
@@ -102,9 +87,10 @@ public class LoginGUI extends JFrame {
                 } else if (nickname.length() > 20) {
                     JOptionPane.showMessageDialog(pnlMain, "Nickname không được đặt quá 20 ký tự", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    String hostname = "localhost";
-                    int port = 5004;
-                    connectToServer(hostname, port, nickname);
+                    // Chờ server kiểm tra đăng nhập
+                    setLoading(true, "Đang xử lý...");
+
+                    RunClient.socketHandler.login(nickname);
                 }
             }
         });

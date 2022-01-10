@@ -15,7 +15,9 @@
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
+        <properties>
+          <opaque value="false"/>
+        </properties>
         <border type="none"/>
         <children>
           <component id="89fda" class="javax.swing.JButton" binding="btnLogout">
@@ -104,7 +106,9 @@
         <constraints>
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
+        <properties>
+          <opaque value="false"/>
+        </properties>
         <border type="none"/>
         <children>
           <grid id="18aa0" layout-manager="GridLayoutManager" row-count="2" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -112,7 +116,9 @@
             <constraints>
               <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
-            <properties/>
+            <properties>
+              <opaque value="false"/>
+            </properties>
             <border type="none"/>
             <children>
               <component id="2a267" class="javax.swing.JLabel" binding="lblWaiting">
@@ -145,7 +151,9 @@
             <constraints>
               <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
-            <properties/>
+            <properties>
+              <opaque value="false"/>
+            </properties>
             <border type="none"/>
             <children>
               <component id="c09cb" class="javax.swing.JButton" binding="btnCancelPairUp">
@@ -204,7 +212,9 @@
         <constraints>
           <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
+        <properties>
+          <opaque value="false"/>
+        </properties>
         <border type="none"/>
         <children>
           <component id="6d1e7" class="javax.swing.JLabel" binding="lblFoundStranger">
@@ -253,7 +263,9 @@
             <constraints>
               <grid row="2" column="1" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
-            <properties/>
+            <properties>
+              <opaque value="false"/>
+            </properties>
             <border type="none"/>
             <children>
               <component id="401cf" class="javax.swing.JLabel" binding="lblPairUpCountdown">
@@ -288,7 +300,9 @@
         <constraints>
           <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
+        <properties>
+          <opaque value="false"/>
+        </properties>
         <border type="none"/>
         <children>
           <component id="f7cbe" class="javax.swing.JButton" binding="btnPairUp">

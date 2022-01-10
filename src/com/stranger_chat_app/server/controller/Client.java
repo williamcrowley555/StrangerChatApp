@@ -65,8 +65,8 @@ public class Client implements Runnable {
                             sendData(DataType.RECEIVED_SECRET_KEY, null);
                             break;
 
-                        case CLIENT_INFO:
-                            onReceiveClientInfo(receivedData.getContent());
+                        case LOGIN:
+                            onReceiveLogin(receivedContent);
                             break;
 
                         case PAIR_UP:
@@ -90,8 +90,12 @@ public class Client implements Runnable {
                             break;
 
                         case LOGOUT:
-                            System.out.println(nickname + " has exited");
+                            System.out.println(nickname + " is logged out");
                             onReceiveLogout(receivedContent);
+                            break;
+
+                        case EXIT:
+                            onReceiveExit(receivedContent);
                             isRunning = false;
                             break;
                     }
@@ -172,8 +176,18 @@ public class Client implements Runnable {
         }
     }
 
-    private void onReceiveClientInfo(String received) {
-        this.nickname = received;
+    private void onReceiveLogin(String received) {
+        String status = "failed;";
+        Client existedClient = RunServer.clientManager.find(received);
+
+        if (existedClient == null) {
+            status = "success;";
+            this.nickname = received;
+
+            sendData(DataType.LOGIN, status + nickname);
+        } else {
+            sendData(DataType.LOGIN, status + Code.NICKNAME_HAS_BEEN_USED);
+        }
     }
 
     private void onReceivePairUp(String received) {
@@ -267,11 +281,19 @@ public class Client implements Runnable {
     }
 
     private void onReceiveLogout(String received) {
-        // log out now
+        // reset nickname and waiting status
         this.nickname = null;
         this.isWaiting = false;
 
         sendData(DataType.LOGOUT, null);
+    }
+
+    private void onReceiveExit(String received) {
+        // reset nickname and waiting status
+        this.nickname = null;
+        this.isWaiting = false;
+
+        sendData(DataType.EXIT, null);
     }
 
     public Socket getClientSocket() {

@@ -21,7 +21,7 @@ public class RunServer {
     public RunServer() {
     }
 
-    public void run() {
+    private void run() {
         try {
             int port = 5004;
 

@@ -9,6 +9,8 @@ import com.stranger_chat_app.client.view.gui.MainMenuGUI;
 import javax.swing.*;
 
 public class RunClient {
+    private String hostname = "localhost";
+    private int port = 5004;
 
 //    GUIs
     public static LoginGUI loginGUI;
@@ -24,12 +26,45 @@ public class RunClient {
         // Customize LookAndFeel UI
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch(Exception e){
-            e.printStackTrace();
-        }
+        } catch(Exception ignored){}
 
         initGUIs();
+    }
+
+    private void run() {
         openGUI(GUIName.LOGIN);
+        // first time running will wait for connection
+        loginGUI.setLoading(true, "Đang chờ kết nối...");
+
+        connectToServer(hostname, port);
+    }
+
+    public void connectToServer(String hostname, int port) {
+        new Thread(() -> {
+            // establish connection
+            boolean isConnected = RunClient.socketHandler.connect(hostname, port);
+
+            // check result
+            if (isConnected) {
+                onSuccess();
+            } else {
+                String failedMsg = "Kết nối thất bại!";
+                onFailed(failedMsg);
+            }
+        }).start();
+    }
+
+    private void onSuccess() {
+        // Kết nối thành công nhưng vẫn chờ server gửi thông báo đã nhận secret key
+        // Cho phép client đăng nhập khi nhận được phản hồi từ server
+
+        loginGUI.setLoading(true, "Đang chờ bảo mật...");;
+    }
+
+    private void onFailed(String failedMsg) {
+        loginGUI.setLoading(false, null);
+        JOptionPane.showMessageDialog(loginGUI, failedMsg, "Lỗi kết nối", JOptionPane.ERROR_MESSAGE);
+        System.exit(0);
     }
 
     public void initGUIs() {
@@ -89,6 +124,6 @@ public class RunClient {
     }
 
     public static void main(String[] args) {
-        new RunClient();
+        new RunClient().run();
     }
 }
