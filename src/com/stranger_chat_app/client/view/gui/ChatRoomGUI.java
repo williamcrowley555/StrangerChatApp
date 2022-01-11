@@ -75,6 +75,26 @@ public class ChatRoomGUI extends JFrame {
         messageArea.setCaretPosition(messageArea.getDocument().getLength());
     }
 
+    private void sendMessage(String content) {
+        if(!content.equals("")) {
+            Message message = new Message(you, stranger, content);
+
+            RunClient.socketHandler.sendChatMessage(message);
+            txtMessage.setText("");
+
+            try {
+                doc.insertAfterEnd(doc.getCharacterElement(doc.getLength()),
+                        "<div style='background-color: #05728F; margin: 0 0 10px 0;'><pre style='color: #fff'>"
+                                + "<span style='color: yellow;'>Bạn: </span>" + content + "</pre></div><br/>");
+            } catch (BadLocationException | IOException badLocationException) {
+                badLocationException.printStackTrace();
+            }
+
+            MessageStore.add(message);
+            messageArea.setCaretPosition(messageArea.getDocument().getLength());
+        }
+    }
+
     private void initComponents() {
         btnSend.setPreferredSize(new Dimension(50, 40));
         txtMessage.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 5));
@@ -105,6 +125,22 @@ public class ChatRoomGUI extends JFrame {
         doc = (HTMLDocument) messageArea.getStyledDocument();
         messageArea.setText("<br/>");
 
+        // Generate new line of txtMessage on CTRL + ENTER
+        InputMap input = txtMessage.getInputMap();
+        KeyStroke enter = KeyStroke.getKeyStroke("ENTER");
+        KeyStroke controlEnter = KeyStroke.getKeyStroke("control ENTER");
+        input.put(controlEnter, "insert-break");
+        input.put(enter, "text-submit");
+
+        ActionMap actions = txtMessage.getActionMap();
+        actions.put("text-submit", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String content = txtMessage.getText();
+                sendMessage(content);
+            }
+        });
+
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
@@ -120,24 +156,7 @@ public class ChatRoomGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String content = txtMessage.getText();
-
-                if(!content.equals("")) {
-                    Message message = new Message(you, stranger, content);
-
-                    RunClient.socketHandler.sendChatMessage(message);
-                    txtMessage.setText("");
-
-                    try {
-                        doc.insertAfterEnd(doc.getCharacterElement(doc.getLength()),
-                                "<div style='background-color: #05728F; margin: 0 0 10px 0;'><pre style='color: #fff'>"
-                                        + "<span style='color: yellow;'>Bạn: </span>" + content + "</pre></div><br/>");
-                    } catch (BadLocationException | IOException badLocationException) {
-                        badLocationException.printStackTrace();
-                    }
-
-                    MessageStore.add(message);
-                    messageArea.setCaretPosition(messageArea.getDocument().getLength());
-                }
+                sendMessage(content);
             }
         });
     }
