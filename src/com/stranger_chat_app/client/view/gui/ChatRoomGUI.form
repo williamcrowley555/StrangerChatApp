@@ -20,7 +20,7 @@
             <properties>
               <font size="20" style="1"/>
               <horizontalAlignment value="0"/>
-              <text value="Trò chuyện"/>
+              <text value="PHÒNG CHAT"/>
             </properties>
           </component>
         </children>

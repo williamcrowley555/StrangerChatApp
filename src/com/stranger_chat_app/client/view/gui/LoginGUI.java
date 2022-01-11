@@ -14,6 +14,7 @@ public class LoginGUI extends JFrame {
     private JLabel lblNickname;
     private JButton btnLogin;
     private JProgressBar pgbLoading;
+    private JPanel pnlHeader;
 
     public LoginGUI() {
         super();

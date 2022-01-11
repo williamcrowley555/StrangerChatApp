@@ -29,7 +29,7 @@ public class Client implements Runnable {
 
     private String nickname;
     private Client stranger;
-    private Set<String> rejectedClients = new HashSet<>();
+    private volatile Set<String> rejectedClients = new HashSet<>();
 
     private boolean isWaiting = false;
     private String acceptPairUpStatus = "";     // value: "yes", "no", ""
@@ -238,16 +238,21 @@ public class Client implements Runnable {
 
         // if one decline
         if (received.equals("no")) {
-            // add rejected client to list
-            this.rejectedClients.add(stranger.getNickname());
+            // if both have no response (both will decline)
+            // check the rejected list of the stranger to avoid sending the rejection response twice
+            // if this client is on the stranger's rejected list, it means that the stranger refused first
+            if (!this.stranger.getRejectedClients().contains(this.nickname)) {
+                // add rejected client to list
+                this.rejectedClients.add(stranger.getNickname());
 
-            // reset acceptPairUpStatus
-            this.acceptPairUpStatus = "";
-            stranger.acceptPairUpStatus = "";
+                // reset acceptPairUpStatus
+                this.acceptPairUpStatus = "";
+                stranger.acceptPairUpStatus = "";
 
-            // send data
-            this.sendData(DataType.RESULT_PAIR_UP, "failed;" + Code.YOU_CHOOSE_NO);
-            stranger.sendData(DataType.RESULT_PAIR_UP, "failed;" + Code.STRANGER_CHOOSE_NO);
+                // send data
+                this.sendData(DataType.RESULT_PAIR_UP, "failed;" + Code.YOU_CHOOSE_NO);
+                stranger.sendData(DataType.RESULT_PAIR_UP, "failed;" + Code.STRANGER_CHOOSE_NO);
+            }
         }
 
         // if both accept

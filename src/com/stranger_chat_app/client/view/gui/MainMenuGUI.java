@@ -24,6 +24,7 @@ public class MainMenuGUI extends JFrame {
     private JPanel pnlPairUp;
     private JButton btnPairUp;
     private JProgressBar pgbLoading;
+    private JPanel pnlHeader;
 
     CountdownTimer acceptPairUpTimer;
     CountdownTimer waitingPairUpTimer;
@@ -122,7 +123,7 @@ public class MainMenuGUI extends JFrame {
         );
     }
 
-    private void stopAcceptPairUpTimer() {
+    public void stopAcceptPairUpTimer() {
         if (acceptPairUpTimer != null) {
             acceptPairUpTimer.cancel();
         }
@@ -137,14 +138,19 @@ public class MainMenuGUI extends JFrame {
                     return null;
                 },
                 (Callable) () -> {
-                    lblWaiting.setText("Đang tìm người để chat... " + (5 * 60 - waitingPairUpTimer.getCurrentTick()) + " s");
+                    int waitingTime = waitingPairUpTimer.getTimeLimit() - waitingPairUpTimer.getCurrentTick();
+                    int mins = waitingTime / 60;
+                    int secs = waitingTime % 60;
+
+                    lblWaiting.setText("<html><body style='text-align:center;'>Đang tìm người để chat...<br>" +
+                            (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs) + "</body></html>");
                     return null;
                 },
                 1
         );
     }
 
-    private void stopWaitingPairUpTimer() {
+    public void stopWaitingPairUpTimer() {
         if (waitingPairUpTimer != null) {
             waitingPairUpTimer.cancel();
         }

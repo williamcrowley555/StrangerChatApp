@@ -163,11 +163,6 @@ public class SocketHandler {
                 exception.printStackTrace();
             }
         }
-
-        // alert if connect interup
-//        JOptionPane.showMessageDialog(null, "Mất kết nối tới server", "Lỗi", JOptionPane.ERROR_MESSAGE);
-//        RunClient.closeAllScene();
-//        RunClient.openScene(RunClient.SceneName.CONNECTSERVER);
     }
 
 
@@ -258,18 +253,18 @@ public class SocketHandler {
 
         if (status.equals("failed")) {
             String failedMsg = splitted[1];
-            int option = JOptionPane.showOptionDialog(RunClient.mainMenuGUI, failedMsg + ". Tiếp tục ghép đôi?", "Ghép đôi thất bại",
-                                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE, null, null, null);
-
-            if(option == JOptionPane.OK_OPTION) {
-                // continue pairing
-                pairUp();
-                return;
-            }
+            int option = JOptionPane.showConfirmDialog(RunClient.mainMenuGUI, failedMsg + ". Tiếp tục ghép đôi?", "Ghép đôi thất bại",
+                                        JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
 
             // stop pairing
             // reset display state of main menu
             RunClient.mainMenuGUI.setDisplayState(MainMenuState.DEFAULT);
+
+            if(option == JOptionPane.YES_OPTION) {
+                // continue pairing
+                pairUp();
+                return;
+            }
         } else if (status.equals("success")) {
             // reset display state of main menu
             RunClient.mainMenuGUI.setDisplayState(MainMenuState.DEFAULT);

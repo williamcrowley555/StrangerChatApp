@@ -63,7 +63,7 @@ public class ClientManager {
 
     public Client findWaitingClient(Client currentClient, Set<String> excludedNicknames) {
         for (Client client : clients) {
-            if (client.isWaiting()) {
+            if (client != currentClient && client.isWaiting()) {
                 if (excludedNicknames.contains(client.getNickname()))
                     continue;
                 else if (client.getRejectedClients().contains(currentClient.getNickname()))
