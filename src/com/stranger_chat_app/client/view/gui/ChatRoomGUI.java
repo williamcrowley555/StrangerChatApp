@@ -50,7 +50,7 @@ public class ChatRoomGUI extends JFrame {
 
     public ChatRoomGUI() {
         super();
-        setTitle("Trò chuyện - Bạn: " + RunClient.socketHandler.getNickname());
+        setTitle("Phòng chat - Bạn: " + RunClient.socketHandler.getNickname());
         setContentPane(pnlMain);
         setSize(600, 600);
         setLocationRelativeTo(null);
@@ -122,6 +122,7 @@ public class ChatRoomGUI extends JFrame {
         topPanel.add(userPanel, BorderLayout.CENTER);
         topPanel.add(icon, BorderLayout.WEST);
 
+        messageArea.setContentType("text/html");
         doc = (HTMLDocument) messageArea.getStyledDocument();
         messageArea.setText("<br/>");
 
