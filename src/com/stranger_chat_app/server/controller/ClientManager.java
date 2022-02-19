@@ -3,6 +3,7 @@ package com.stranger_chat_app.server.controller;
 import com.stranger_chat_app.shared.constant.DataType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Set;
 
 public class ClientManager {
@@ -62,6 +63,9 @@ public class ClientManager {
     }
 
     public Client findWaitingClient(Client currentClient, Set<String> excludedNicknames) {
+        // Shuffling the client list
+        Collections.shuffle(clients);
+
         for (Client client : clients) {
             if (client != currentClient && client.isWaiting()) {
                 if (excludedNicknames.contains(client.getNickname()))

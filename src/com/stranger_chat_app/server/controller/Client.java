@@ -91,7 +91,7 @@ public class Client implements Runnable {
                             break;
 
                         case LOGOUT:
-                            System.out.println(nickname + " is logged out");
+                            System.out.println(nickname + " logged out");
                             onReceiveLogout(receivedContent);
                             break;
 
