@@ -5,6 +5,7 @@ import com.stranger_chat_app.client.model.MessageStore;
 import com.stranger_chat_app.shared.model.Message;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
@@ -17,6 +18,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class ChatRoomGUI extends JFrame {
     private JScrollPane scrollPanelMsg;
@@ -47,7 +50,17 @@ public class ChatRoomGUI extends JFrame {
         setSize(600, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
+        messageArea.addHyperlinkListener(e -> {
+            if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+                System.out.println(e.getURL());
+                Desktop desktop = Desktop.getDesktop();
+                try {
+                    desktop.browse(e.getURL().toURI());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
         initComponents();
 
         lblEmoji.addMouseListener(new MouseAdapter() {
@@ -149,6 +162,25 @@ public class ChatRoomGUI extends JFrame {
         }
     }
 
+    //Auto hyperlink urls if there are URLs in message
+    private String addHyperlinkUrl(String message){
+        String [] parts = message.split("\\s+");
+        String content = "";
+
+        // Attempt to convert each item into an URL.
+        for( String item : parts ) try {
+            URL url = new URL(item);
+            // If there is possible url then replace with anchor...
+            System.out.print("<a href=\"" + url + "\">"+ url + "</a> " );
+            content += "<a href=\"" + url + "\">"+ url + "</a> ";
+        } catch (MalformedURLException e) {
+            // If there was an normal string
+            System.out.print( item + " " );
+            content += item + " ";
+        }
+        return content;
+    }
+
     public String createHTMLMsg(String userType, Message message) {
         String bubble = null;
 
@@ -157,7 +189,7 @@ public class ChatRoomGUI extends JFrame {
                 bubble = "<div class=\"my-msg\">\n" +
                         "   <div class=\"msg-info-name\">Bạn</div>\n" +
                         "  <div class=\"msg-text\">\n" +
-                        message.getContent() +
+                        addHyperlinkUrl(message.getContent()) +
                         "  </div>\n" +
                         "</div>";
                 break;
@@ -166,7 +198,7 @@ public class ChatRoomGUI extends JFrame {
                 bubble = "<div class=\"stranger-msg\">\n" +
                         "   <div class=\"msg-info-name\">" + message.getSender() + "</div>\n" +
                         "  <div class=\"msg-text\">\n" +
-                        message.getContent() +
+                        addHyperlinkUrl(message.getContent()) +
                         "  </div>\n" +
                         "</div>";
                 break;
