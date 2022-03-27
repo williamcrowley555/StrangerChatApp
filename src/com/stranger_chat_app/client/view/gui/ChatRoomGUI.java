@@ -163,21 +163,22 @@ public class ChatRoomGUI extends JFrame {
     }
 
     //Auto hyperlink urls if there are URLs in message
-    private String addHyperlinkUrl(String message){
+    private String handleHyperlinkUrls(String message){
         String [] parts = message.split("\\s+");
         String content = "";
 
         // Attempt to convert each item into an URL.
-        for( String item : parts ) try {
-            URL url = new URL(item);
-            // If there is possible url then replace with anchor...
-            System.out.print("<a href=\"" + url + "\">"+ url + "</a> " );
-            content += "<a href=\"" + url + "\">"+ url + "</a> ";
-        } catch (MalformedURLException e) {
-            // If there was an normal string
-            System.out.print( item + " " );
-            content += item + " ";
+        for( String item : parts ) {
+            try {
+                URL url = new URL(item);
+                // If there is possible url then replace with anchor...
+                content += "<a style='color: #0000EE' href=\"" + url + "\">"+ url + "</a> ";
+            } catch (MalformedURLException e) {
+                // If there was an normal string
+                content += item + " ";
+            }
         }
+
         return content;
     }
 
@@ -189,7 +190,7 @@ public class ChatRoomGUI extends JFrame {
                 bubble = "<div class=\"my-msg\">\n" +
                         "   <div class=\"msg-info-name\">Bạn</div>\n" +
                         "  <div class=\"msg-text\">\n" +
-                        addHyperlinkUrl(message.getContent()) +
+                        handleHyperlinkUrls(message.getContent()) +
                         "  </div>\n" +
                         "</div>";
                 break;
@@ -198,7 +199,7 @@ public class ChatRoomGUI extends JFrame {
                 bubble = "<div class=\"stranger-msg\">\n" +
                         "   <div class=\"msg-info-name\">" + message.getSender() + "</div>\n" +
                         "  <div class=\"msg-text\">\n" +
-                        addHyperlinkUrl(message.getContent()) +
+                        handleHyperlinkUrls(message.getContent()) +
                         "  </div>\n" +
                         "</div>";
                 break;
