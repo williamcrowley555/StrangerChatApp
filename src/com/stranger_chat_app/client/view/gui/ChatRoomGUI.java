@@ -52,7 +52,19 @@ public class ChatRoomGUI extends JFrame {
         lblEmoji.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                //Values to position the emojiDialog
+                int offsetX = 0,
+                    offsetY = -240;
+
+                //Get position of label that trigger the event
+                JLabel label = (JLabel) e.getSource();
+                Point lablePosition = label.getLocationOnScreen();
+
                 JDialog emojiDialog = new JDialog();
+
+                //Set location
+                emojiDialog.setLocation(lablePosition.x + offsetX, lablePosition.y + offsetY + label.getHeight());
+
                 Object[][] emojiMatrix = new Object[6][6];
                 int emojiCode = 0x1F601;
                 for (int i = 0; i < 6; i++) {
@@ -95,7 +107,6 @@ public class ChatRoomGUI extends JFrame {
                 emojiDialog.setTitle("Chọn emoji");
                 emojiDialog.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
                 emojiDialog.pack();
-                emojiDialog.setLocationRelativeTo(lblEmoji);
                 emojiDialog.setVisible(true);
             }
         });
