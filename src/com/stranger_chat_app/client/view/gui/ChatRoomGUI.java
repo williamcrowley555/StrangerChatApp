@@ -5,11 +5,17 @@ import com.stranger_chat_app.client.model.MessageStore;
 import com.stranger_chat_app.shared.model.Message;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 
 public class ChatRoomGUI extends JFrame {
@@ -22,31 +28,16 @@ public class ChatRoomGUI extends JFrame {
     private JPanel pnlMain;
     private JPanel pnlHeader;
     private JPanel pnlChat;
+    private JLabel lblEmoji;
     private JLabel lblStranger;
     private JLabel lblStatus;
+
+    private StyleSheet styleSheet = new StyleSheet();
+    private HTMLEditorKit kit = new HTMLEditorKit();
     private HTMLDocument doc;
 
     private String you;
     private String stranger;
-
-    private String cssLocalMessage = "position:relative;\n" +
-            "max-width: 40%;\n" +
-            "padding:5px 10px;\n" +
-            "margin: 1em 2em;\n" +
-            "color: white; \n" +
-            "background: #3498DB;\n" +
-            "border-radius:25px;\n" +
-            "float: right;\n" +
-            "clear: both;";
-    private String cssRemoteMessage = "position:relative;\n" +
-            "max-width: 40%;\n" +
-            "padding:5px 10px;\n" +
-            "margin: 0.3em 2em;\n" +
-            "color:white; \n" +
-            "background: #26A65B;\n" +
-            "border-radius:25px;\n" +
-            "float: left;\n" +
-            "clear: both;";
 
     public ChatRoomGUI() {
         super();
@@ -57,15 +48,66 @@ public class ChatRoomGUI extends JFrame {
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         initComponents();
+
+        lblEmoji.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JDialog emojiDialog = new JDialog();
+                Object[][] emojiMatrix = new Object[6][6];
+                int emojiCode = 0x1F601;
+                for (int i = 0; i < 6; i++) {
+                    for (int j = 0; j < 6; j++)
+                        emojiMatrix[i][j] = new String(Character.toChars(emojiCode++));
+                }
+
+                JTable emojiTable = new JTable();
+                emojiTable.setModel(new DefaultTableModel(emojiMatrix, new String[] { "", "", "", "", "", "" }) {
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    public boolean isCellEditable(int row, int column) {
+                        return false;
+                    }
+                });
+                emojiTable.setFont(new Font("Dialog", Font.PLAIN, 20));
+                emojiTable.setShowGrid(false);
+                emojiTable.setIntercellSpacing(new Dimension(0, 0));
+                emojiTable.setRowHeight(30);
+                emojiTable.getTableHeader().setVisible(false);
+
+                DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+                centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+                for (int i = 0; i < emojiTable.getColumnCount(); i++) {
+                    emojiTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+                    emojiTable.getColumnModel().getColumn(i).setMaxWidth(30);
+                }
+                emojiTable.setCellSelectionEnabled(true);
+                emojiTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                emojiTable.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        txtMessage.setText(txtMessage.getText() + emojiTable
+                                .getValueAt(emojiTable.rowAtPoint(e.getPoint()), emojiTable.columnAtPoint(e.getPoint())));
+                    }
+                });
+
+                emojiDialog.setContentPane(emojiTable);
+                emojiDialog.setTitle("Chọn emoji");
+                emojiDialog.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
+                emojiDialog.pack();
+                emojiDialog.setLocationRelativeTo(lblEmoji);
+                emojiDialog.setVisible(true);
+            }
+        });
     }
 
     public void addChatMessage(Message message) {
         MessageStore.add(message);
 
         try {
-            doc.insertAfterEnd(doc.getCharacterElement(doc.getLength()),
-                    "<div style='background-color: #ebebeb; margin: 0 0 10px 0;'><pre style='color: #000;'>"
-                            + "<span style='color: red;'>" + message.getSender() + ": </span>" + message.getContent() + "</pre></div><br/>");
+            kit.insertHTML(doc, doc.getLength(),
+                    createHTMLMsg("recipient", message),
+                    0, 0, null);
         } catch (BadLocationException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -83,9 +125,9 @@ public class ChatRoomGUI extends JFrame {
             txtMessage.setText("");
 
             try {
-                doc.insertAfterEnd(doc.getCharacterElement(doc.getLength()),
-                        "<div style='background-color: #05728F; margin: 0 0 10px 0;'><pre style='color: #fff'>"
-                                + "<span style='color: yellow;'>Bạn: </span>" + content + "</pre></div><br/>");
+                kit.insertHTML(doc, doc.getLength(),
+                        createHTMLMsg("sender", message),
+                        0, 0, null);
             } catch (BadLocationException | IOException badLocationException) {
                 badLocationException.printStackTrace();
             }
@@ -95,10 +137,38 @@ public class ChatRoomGUI extends JFrame {
         }
     }
 
+    public String createHTMLMsg(String userType, Message message) {
+        String bubble = null;
+
+        switch (userType) {
+            case "sender":
+                bubble = "<div class=\"my-msg\">\n" +
+                        "   <div class=\"msg-info-name\">Bạn</div>\n" +
+                        "  <div class=\"msg-text\">\n" +
+                        message.getContent() +
+                        "  </div>\n" +
+                        "</div>";
+                break;
+
+            case "recipient":
+                bubble = "<div class=\"stranger-msg\">\n" +
+                        "   <div class=\"msg-info-name\">" + message.getSender() + "</div>\n" +
+                        "  <div class=\"msg-text\">\n" +
+                        message.getContent() +
+                        "  </div>\n" +
+                        "</div>";
+                break;
+
+            default:
+                break;
+        }
+
+        return bubble + "<br/>";
+    }
+
     private void initComponents() {
         btnSend.setPreferredSize(new Dimension(50, 40));
-        txtMessage.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 5));
-        txtMessage.setMargin(new Insets(10, 10, 10, 10));
+        txtMessage.setMargin(new Insets(4, 4, 4, 4));
         inputPanel.setBorder(BorderFactory.createEmptyBorder(2, 0, 5, 3));
 
         topPanel.setLayout(new BorderLayout(10, 10));
@@ -122,9 +192,27 @@ public class ChatRoomGUI extends JFrame {
         topPanel.add(userPanel, BorderLayout.CENTER);
         topPanel.add(icon, BorderLayout.WEST);
 
-        messageArea.setContentType("text/html");
-        doc = (HTMLDocument) messageArea.getStyledDocument();
-        messageArea.setText("<br/>");
+        // Add CSS Styles
+        styleSheet.addRule(".my-msg {\n" +
+                "  padding: 10px;\n" +
+                "  color: #fff; \n" +
+                "  background: #3498DB;\n" +
+                "}");
+        styleSheet.addRule(".stranger-msg {\n" +
+                "  padding: 10px;\n" +
+                "  color: #fff; \n" +
+                "  background: #26A65B;\n" +
+                "}");
+        styleSheet.addRule(".msg-info-name {\n" +
+                "  margin-bottom: 10px;\n" +
+                "  font-weight: bold;\n" +
+                "}");
+
+        kit.setStyleSheet(styleSheet);
+        doc = (HTMLDocument) messageArea.getDocument();
+
+        messageArea.setEditorKit(kit);
+        messageArea.setDocument(doc);
 
         // Generate new line of txtMessage on CTRL + ENTER
         InputMap input = txtMessage.getInputMap();
