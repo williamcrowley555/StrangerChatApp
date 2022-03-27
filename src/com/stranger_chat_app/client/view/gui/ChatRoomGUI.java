@@ -153,7 +153,7 @@ public class ChatRoomGUI extends JFrame {
 
         switch (userType) {
             case "sender":
-                bubble = "<div class=\"my-msg\">\n" +
+                bubble = "<div align= \"right\" class=\"my-msg\">\n" +
                         "   <div class=\"msg-info-name\">Bạn</div>\n" +
                         "  <div class=\"msg-text\">\n" +
                         message.getContent() +
@@ -162,7 +162,7 @@ public class ChatRoomGUI extends JFrame {
                 break;
 
             case "recipient":
-                bubble = "<div class=\"stranger-msg\">\n" +
+                bubble = "<div align= \"left\" class=\"stranger-msg\">\n" +
                         "   <div class=\"msg-info-name\">" + message.getSender() + "</div>\n" +
                         "  <div class=\"msg-text\">\n" +
                         message.getContent() +
