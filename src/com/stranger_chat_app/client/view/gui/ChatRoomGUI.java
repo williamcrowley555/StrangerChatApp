@@ -29,6 +29,7 @@ public class ChatRoomGUI extends JFrame {
     private JPanel pnlHeader;
     private JPanel pnlChat;
     private JLabel lblEmoji;
+    private JPanel sendButtonPanel;
     private JLabel lblStranger;
     private JLabel lblStatus;
 
@@ -179,7 +180,7 @@ public class ChatRoomGUI extends JFrame {
 
     private void initComponents() {
         btnSend.setPreferredSize(new Dimension(50, 40));
-        txtMessage.setMargin(new Insets(4, 4, 4, 4));
+        txtMessage.setMargin(new Insets(3, 3, 3, 3));
         inputPanel.setBorder(BorderFactory.createEmptyBorder(2, 0, 5, 3));
 
         topPanel.setLayout(new BorderLayout(10, 10));
@@ -202,6 +203,7 @@ public class ChatRoomGUI extends JFrame {
         userPanel.add(lblStatus);
         topPanel.add(userPanel, BorderLayout.CENTER);
         topPanel.add(icon, BorderLayout.WEST);
+
 
         // Add CSS Styles
         styleSheet.addRule(".my-msg {\n" +
