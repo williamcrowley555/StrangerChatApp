@@ -2,7 +2,9 @@ package com.stranger_chat_app.client.view.gui;
 
 import com.stranger_chat_app.client.RunClient;
 import com.stranger_chat_app.client.model.MessageStore;
+import com.stranger_chat_app.server.controller.MyFile;
 import com.stranger_chat_app.shared.model.Message;
+import com.stranger_chat_app.shared.security.BytesUtil;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -10,7 +12,11 @@ import javax.swing.text.html.HTMLDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
+import java.io.*;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 public class ChatRoomGUI extends JFrame {
     private JScrollPane scrollPanelMsg;
@@ -22,12 +28,16 @@ public class ChatRoomGUI extends JFrame {
     private JPanel pnlMain;
     private JPanel pnlHeader;
     private JPanel pnlChat;
+    private JButton openButton;
+    private JButton sendButton;
     private JLabel lblStranger;
     private JLabel lblStatus;
     private HTMLDocument doc;
 
     private String you;
     private String stranger;
+
+    private final File[] fileToSend = new File[1];
 
     private String cssLocalMessage = "position:relative;\n" +
             "max-width: 40%;\n" +
@@ -158,6 +168,63 @@ public class ChatRoomGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String content = txtMessage.getText();
                 sendMessage(content);
+            }
+        });
+
+        openButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Chọn file muốn gửi.");
+
+                if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
+                    fileToSend[0] = fileChooser.getSelectedFile();
+                }
+            }
+        });
+
+        sendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (fileToSend[0] == null){
+                    JOptionPane.showMessageDialog(ChatRoomGUI.this,"Bạn chưa chọn file để gửi.");
+                } else {
+                    try {
+                        FileInputStream fileInputStream = null;
+                        fileInputStream = new FileInputStream(fileToSend[0].getAbsoluteFile());
+
+                        String fileName = fileToSend[0].getName();
+                        //System.out.println("Send file : " + fileName);
+
+                        byte[] fileNameBytes = fileName.getBytes();
+                        byte[] fileContentBytes = fileInputStream.readAllBytes();
+
+                        MyFile myFile = new MyFile();
+                        myFile.setName(fileName);
+                        myFile.setData(fileContentBytes);
+
+//
+//                        System.out.println(myFile.getData());
+
+//                        byte[] fileContentBytes = new byte[(int)fileToSend[0].length()];
+//                        fileInputStream.read(fileContentBytes);
+
+
+                        //System.out.println(fileContent);
+                        //System.out.println(fileContentBytes);
+
+                        Message message = new Message(you, stranger, myFile.toJSONString());
+
+                        RunClient.socketHandler.sendFile(message);
+
+                    } catch (FileNotFoundException ex) {
+                        ex.printStackTrace();
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+
+
+                }
             }
         });
     }

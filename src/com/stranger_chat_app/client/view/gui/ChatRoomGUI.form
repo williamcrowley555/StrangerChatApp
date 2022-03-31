@@ -15,6 +15,18 @@
         <properties/>
         <border type="none"/>
         <children>
+          <component id="79a26" class="javax.swing.JButton" binding="openButton" default-binding="true">
+            <constraints/>
+            <properties>
+              <text value="Open"/>
+            </properties>
+          </component>
+          <component id="74888" class="javax.swing.JButton" binding="sendButton" default-binding="true">
+            <constraints/>
+            <properties>
+              <text value="Send"/>
+            </properties>
+          </component>
           <component id="40ba7" class="javax.swing.JLabel">
             <constraints/>
             <properties>

@@ -11,6 +11,7 @@ public enum DataType {
     CLOSE_CHAT_ROOM,
     ERROR,
 
+
 //    Client Request
     LOGIN,
     SECRET_KEY,
@@ -18,6 +19,7 @@ public enum DataType {
     CANCEL_PAIR_UP,
     PAIR_UP_RESPONSE,
     CHAT_MESSAGE,
+    SEND_FILE,
     LEAVE_CHAT_ROOM,
     LOGOUT,
     EXIT,

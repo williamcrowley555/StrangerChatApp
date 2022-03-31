@@ -6,6 +6,7 @@ import com.stranger_chat_app.shared.constant.DataType;
 import com.stranger_chat_app.shared.model.Data;
 import com.stranger_chat_app.shared.model.Message;
 import com.stranger_chat_app.shared.security.AESUtil;
+import com.stranger_chat_app.shared.security.BytesUtil;
 import com.stranger_chat_app.shared.security.RSAUtil;
 
 import javax.crypto.BadPaddingException;
@@ -84,6 +85,10 @@ public class Client implements Runnable {
 
                         case CHAT_MESSAGE:
                             onReceiveChatMessage(receivedContent);
+                            break;
+
+                        case SEND_FILE:
+                            onReceiveFile(receivedContent);
                             break;
 
                         case LEAVE_CHAT_ROOM:
@@ -278,6 +283,39 @@ public class Client implements Runnable {
         if (stranger != null) {
             // send message to stranger
             stranger.sendData(DataType.CHAT_MESSAGE, received);
+        }
+    }
+
+    private void onReceiveFile(String received) {
+        Message message = Message.parse(received);
+        Client stranger = RunServer.clientManager.find(message.getRecipient());
+        MyFile myFile = MyFile.parse(message.getContent());
+
+        File filesFolder = new File(System.getProperty("user.dir")
+                + "\\src\\com\\stranger_chat_app\\server\\client-files");
+        if (!filesFolder.exists()) {
+            filesFolder.mkdir();
+        }
+
+        File clientFolder = new File(filesFolder.getAbsolutePath() + "\\" + message.getSender());
+        if (!clientFolder.exists()) {
+            clientFolder.mkdir();
+        }
+
+        try {
+            FileOutputStream output = new FileOutputStream(
+                    new File(clientFolder.getAbsolutePath() + "\\" + myFile.getName()));
+            output.write(myFile.getData());
+            output.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+
+        if (stranger != null) {
+            // send message to stranger
+            stranger.sendData(DataType.SEND_FILE, received);
         }
     }
 
