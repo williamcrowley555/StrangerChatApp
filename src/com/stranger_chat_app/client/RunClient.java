@@ -10,7 +10,7 @@ import javax.swing.*;
 
 public class RunClient {
     private String hostname = "localhost";
-    private int port = 5004;
+    private int port = 5003;
 
 //    GUIs
     public static LoginGUI loginGUI;

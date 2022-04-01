@@ -23,7 +23,7 @@ public class RunServer {
 
     private void run() {
         try {
-            int port = 5004;
+            int port = 5003;
 
             server = new ServerSocket(port);
             System.out.println("Server is running at port " + port + ".");

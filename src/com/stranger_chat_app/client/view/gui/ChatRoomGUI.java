@@ -33,6 +33,7 @@ public class ChatRoomGUI extends JFrame {
     private JPanel pnlChat;
     private JLabel lblEmoji;
     private JPanel sendButtonPanel;
+    private JButton btnCall;
     private JLabel lblStranger;
     private JLabel lblStatus;
 
@@ -122,6 +123,13 @@ public class ChatRoomGUI extends JFrame {
                 emojiDialog.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
                 emojiDialog.pack();
                 emojiDialog.setVisible(true);
+            }
+        });
+        btnCall.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                CallGUI call = new CallGUI();
+                call.setVisible(true);
             }
         });
     }
@@ -236,7 +244,7 @@ public class ChatRoomGUI extends JFrame {
         userPanel.add(lblStatus);
         topPanel.add(userPanel, BorderLayout.CENTER);
         topPanel.add(icon, BorderLayout.WEST);
-
+        topPanel.add(btnCall, BorderLayout.EAST);
 
         // Add CSS Styles
         styleSheet.addRule(".my-msg {\n" +
