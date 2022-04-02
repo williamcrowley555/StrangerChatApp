@@ -3,6 +3,7 @@ package com.stranger_chat_app.client.controller;
 import com.stranger_chat_app.client.RunClient;
 import com.stranger_chat_app.client.view.enums.GUIName;
 import com.stranger_chat_app.client.view.enums.MainMenuState;
+import com.stranger_chat_app.client.view.gui.ChatRoomGUI;
 import com.stranger_chat_app.server.controller.MyFile;
 import com.stranger_chat_app.shared.constant.DataType;
 import com.stranger_chat_app.shared.model.Data;
@@ -121,6 +122,10 @@ public class SocketHandler {
 
                         case SEND_FILE:
                             onReceiveFile(receivedContent);
+                            break;
+
+                        case DOWNLOAD:
+                            onDownload(receivedContent);
                             break;
 
                         case LEAVE_CHAT_ROOM:
@@ -303,7 +308,6 @@ public class SocketHandler {
 
     private void onReceiveChatMessage(String received) {
         // convert received JSON message to Message
-        //System.out.println(received);
         Message message = Message.parse(received);
         RunClient.chatRoomGUI.addChatMessage(message);
     }
@@ -313,7 +317,29 @@ public class SocketHandler {
         Message message = Message.parse(received);
         MyFile myFile = MyFile.parse(message.getContent());
         message.setContent(myFile.getName());
-        RunClient.chatRoomGUI.addChatMessage(message);
+        RunClient.chatRoomGUI.addFileMessage(message);
+    }
+
+    private void onDownload(String received) {
+        // convert received JSON message to Message
+        Message message = Message.parse(received);
+        MyFile myFile = MyFile.parse(message.getContent());
+
+            if (ChatRoomGUI.path != null)
+            {
+                try {
+                    FileOutputStream output = new FileOutputStream(
+                            new File(ChatRoomGUI.path));
+                    output.write(myFile.getData());
+                    output.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            } else {
+                System.out.println("Chưa chọn đường dẫn");
+            }
     }
 
     private void onReceiveLeaveChatRoom(String received) {
@@ -375,6 +401,10 @@ public class SocketHandler {
 
     public void sendFile(Message message) {
         sendData(DataType.SEND_FILE, message.toJSONString());
+    }
+
+    public void download(Message message) {
+        sendData(DataType.DOWNLOAD, message.toJSONString());
     }
 
     public void leaveChatRoom() {

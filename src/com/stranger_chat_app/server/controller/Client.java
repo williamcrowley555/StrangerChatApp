@@ -91,6 +91,10 @@ public class Client implements Runnable {
                             onReceiveFile(receivedContent);
                             break;
 
+                        case DOWNLOAD:
+                            onDownload(receivedContent);
+                            break;
+
                         case LEAVE_CHAT_ROOM:
                             onReceiveLeaveChatRoom(receivedContent);
                             break;
@@ -316,6 +320,50 @@ public class Client implements Runnable {
         if (stranger != null) {
             // send message to stranger
             stranger.sendData(DataType.SEND_FILE, received);
+        }
+    }
+
+    private void onDownload(String received) {
+        Message message = Message.parse(received);
+        File filesFolder = new File(System.getProperty("user.dir")
+                + "\\src\\com\\stranger_chat_app\\server\\client-files");
+        File clientFolder = new File(filesFolder.getAbsolutePath() + "\\" + message.getSender());
+        if (!clientFolder.exists()) {
+            clientFolder.mkdir();
+        }
+
+        File fileToDowload = new File(filesFolder.getAbsolutePath() + "\\" + message.getSender() +
+                "\\" + message.getContent());
+        if (!fileToDowload.exists()) {
+            System.out.println("Not exist");
+        } else {
+            System.out.println("Found");
+            Client stranger = RunServer.clientManager.find(message.getRecipient());
+
+            if (stranger != null) {
+                // send message to stranger
+                FileInputStream fileInputStream = null;
+                try {
+                    fileInputStream = new FileInputStream(fileToDowload.getAbsoluteFile());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                String fileName = fileToDowload.getName();
+                byte[] fileContentBytes = new byte[0];
+                try {
+                    fileContentBytes = fileInputStream.readAllBytes();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                MyFile myFile = new MyFile();
+                myFile.setName(fileName);
+                myFile.setData(fileContentBytes);
+                message.setContent(myFile.toJSONString());
+
+                stranger.sendData(DataType.DOWNLOAD, message.toJSONString());
+            }
         }
     }
 

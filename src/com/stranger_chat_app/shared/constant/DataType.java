@@ -20,6 +20,7 @@ public enum DataType {
     PAIR_UP_RESPONSE,
     CHAT_MESSAGE,
     SEND_FILE,
+    DOWNLOAD,
     LEAVE_CHAT_ROOM,
     LOGOUT,
     EXIT,
