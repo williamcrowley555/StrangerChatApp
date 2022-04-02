@@ -375,6 +375,38 @@ public class Client implements Runnable {
         // notify the stranger that you have exited
         this.stranger.sendData(DataType.CLOSE_CHAT_ROOM, this.nickname + " đã thoát phòng");
 
+        // delete folder when client exit
+        File filesFolder = new File(System.getProperty("user.dir")
+                + "\\src\\com\\stranger_chat_app\\server\\client-files");
+        File clientFolder1 = new File(filesFolder.getAbsolutePath() + "\\" + this.stranger.nickname);
+        File clientFolder2 = new File(filesFolder.getAbsolutePath() + "\\" + this.nickname);
+
+        if (clientFolder1.exists()) {
+            String[] list = clientFolder1.list();
+
+            if (list != null) {
+                for (int i = 0; i < list.length; i++) {
+                    File entry = new File(clientFolder1, list[i]);
+                    if (entry.exists())
+                        entry.delete();
+                }
+            }
+            clientFolder1.delete();
+        }
+
+        if (clientFolder2.exists()) {
+            String[] list = clientFolder2.list();
+
+            if (list != null) {
+                for (int i = 0; i < list.length; i++) {
+                    File entry = new File(clientFolder2, list[i]);
+                    if (entry.exists())
+                        entry.delete();
+                }
+            }
+            clientFolder2.delete();
+        }
+
         // TODO leave chat room
         sendData(DataType.LEAVE_CHAT_ROOM, null);
     }

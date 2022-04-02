@@ -15,16 +15,16 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="79a26" class="javax.swing.JButton" binding="openButton" default-binding="true">
+          <component id="79a26" class="javax.swing.JButton" binding="chooseFileButton">
             <constraints/>
             <properties>
-              <text value="Open"/>
+              <text value="Choose File"/>
             </properties>
           </component>
-          <component id="74888" class="javax.swing.JButton" binding="sendButton" default-binding="true">
+          <component id="74888" class="javax.swing.JButton" binding="sendFileButton">
             <constraints/>
             <properties>
-              <text value="Send"/>
+              <text value="Send File"/>
             </properties>
           </component>
           <component id="40ba7" class="javax.swing.JLabel">

@@ -4,7 +4,6 @@ import com.stranger_chat_app.client.RunClient;
 import com.stranger_chat_app.client.model.MessageStore;
 import com.stranger_chat_app.server.controller.MyFile;
 import com.stranger_chat_app.shared.model.Message;
-import com.stranger_chat_app.shared.security.BytesUtil;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -14,10 +13,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 public class ChatRoomGUI extends JFrame {
     private JScrollPane scrollPanelMsg;
@@ -29,8 +24,8 @@ public class ChatRoomGUI extends JFrame {
     private JPanel pnlMain;
     private JPanel pnlHeader;
     private JPanel pnlChat;
-    private JButton openButton;
-    private JButton sendButton;
+    private JButton chooseFileButton;
+    private JButton sendFileButton;
     private JLabel lblStranger;
     private JLabel lblStatus;
     private HTMLDocument doc;
@@ -230,7 +225,7 @@ public class ChatRoomGUI extends JFrame {
             }
         });
 
-        openButton.addActionListener(new ActionListener() {
+        chooseFileButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileChooser = new JFileChooser();
@@ -242,7 +237,7 @@ public class ChatRoomGUI extends JFrame {
             }
         });
 
-        sendButton.addActionListener(new ActionListener() {
+        sendFileButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (fileToSend[0] == null){
