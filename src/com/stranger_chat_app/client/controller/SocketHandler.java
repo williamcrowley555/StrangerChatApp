@@ -1,6 +1,7 @@
 package com.stranger_chat_app.client.controller;
 
 import com.stranger_chat_app.client.RunClient;
+import com.stranger_chat_app.client.view.enums.CallState;
 import com.stranger_chat_app.client.view.enums.GUIName;
 import com.stranger_chat_app.client.view.enums.MainMenuState;
 import com.stranger_chat_app.client.view.gui.ChatRoomGUI;
@@ -9,7 +10,6 @@ import com.stranger_chat_app.shared.constant.DataType;
 import com.stranger_chat_app.shared.model.Data;
 import com.stranger_chat_app.shared.model.Message;
 import com.stranger_chat_app.shared.security.AESUtil;
-import com.stranger_chat_app.shared.security.BytesUtil;
 import com.stranger_chat_app.shared.security.RSAUtil;
 
 import javax.crypto.BadPaddingException;
@@ -134,6 +134,18 @@ public class SocketHandler {
 
                         case CLOSE_CHAT_ROOM:
                             onReceiveCloseChatRoom(receivedContent);
+                            break;
+
+                        case RINGING:
+                            onReceiveRinging(receivedContent);
+                            break;
+
+                        case INCOMING_CALL:
+                            onReceiveIncomingCall(receivedContent);
+                            break;
+
+                        case END_CALL:
+                            onReceiveEndCall(receivedContent);
                             break;
 
                         case LOGOUT:
@@ -361,6 +373,30 @@ public class SocketHandler {
         );
     }
 
+    private void onReceiveRinging(String received) {
+        RunClient.openGUI(GUIName.CALL);
+        RunClient.callGUI.setDisplayState(CallState.RINGING);
+        RunClient.callGUI.setStranger(received);
+    }
+
+    private void onReceiveIncomingCall(String received) {
+        RunClient.openGUI(GUIName.CALL);
+        RunClient.callGUI.setDisplayState(CallState.INCOMING_CALL);
+        RunClient.callGUI.setStranger(received);
+    }
+
+    private void onReceiveEndCall(String received) {
+        System.out.println("Socket handler: END CALL");
+        RunClient.closeGUI(GUIName.CALL);
+
+        // show notification
+        JOptionPane.showMessageDialog(
+                RunClient.chatRoomGUI,
+                "Kết thúc cuộc gọi", "Đóng",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
     private void onReceiveLogout(String received) {
         // xóa nickname
         this.nickname = null;
@@ -409,6 +445,14 @@ public class SocketHandler {
 
     public void leaveChatRoom() {
         sendData(DataType.LEAVE_CHAT_ROOM, null);
+    }
+
+    public void call(String stranger) {
+        sendData(DataType.CALLING, stranger);
+    }
+
+    public void endCall(String stranger) {
+        sendData(DataType.END_CALL, stranger);
     }
 
     public void logout() {

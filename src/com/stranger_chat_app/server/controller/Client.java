@@ -99,6 +99,14 @@ public class Client implements Runnable {
                             onReceiveLeaveChatRoom(receivedContent);
                             break;
 
+                        case CALLING:
+                            onReceiveCalling(receivedContent);
+                            break;
+
+                        case END_CALL:
+                            onReceiveEndCall(receivedContent);
+                            break;
+
                         case LOGOUT:
                             System.out.println(nickname + " logged out");
                             onReceiveLogout(receivedContent);
@@ -409,6 +417,27 @@ public class Client implements Runnable {
 
         // TODO leave chat room
         sendData(DataType.LEAVE_CHAT_ROOM, null);
+    }
+
+    private void onReceiveCalling(String received) {
+        Client stranger = RunServer.clientManager.find(received);
+
+        if (stranger != null) {
+            sendData(DataType.RINGING, received);
+            // call stranger
+            stranger.sendData(DataType.INCOMING_CALL, this.nickname);
+        }
+    }
+
+    private void onReceiveEndCall(String received) {
+        sendData(DataType.END_CALL, null);
+
+        Client stranger = RunServer.clientManager.find(received);
+
+        if (stranger != null) {
+            // call stranger
+            stranger.sendData(DataType.END_CALL, null);
+        }
     }
 
     private void onReceiveLogout(String received) {

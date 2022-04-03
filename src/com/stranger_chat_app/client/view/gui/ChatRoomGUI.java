@@ -41,9 +41,9 @@ public class ChatRoomGUI extends JFrame {
     private JPanel pnlChat;
     private JLabel lblEmoji;
     private JPanel sendButtonPanel;
-    private JButton btnCall;
     private JButton chooseFileButton;
     private JButton sendFileButton;
+    private JLabel lblCall;
     private JLabel lblStranger;
     private JLabel lblStatus;
 
@@ -132,11 +132,11 @@ public class ChatRoomGUI extends JFrame {
                 emojiDialog.setVisible(true);
             }
         });
-        btnCall.addActionListener(new ActionListener() {
+
+        lblCall.addMouseListener(new MouseAdapter() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                CallGUI call = new CallGUI();
-                call.setVisible(true);
+            public void mouseClicked(MouseEvent e) {
+                RunClient.socketHandler.call(stranger);
             }
         });
     }
@@ -317,7 +317,7 @@ public class ChatRoomGUI extends JFrame {
         userPanel.add(lblStatus);
         topPanel.add(userPanel, BorderLayout.CENTER);
         topPanel.add(icon, BorderLayout.WEST);
-        topPanel.add(btnCall, BorderLayout.EAST);
+        topPanel.add(lblCall, BorderLayout.EAST);
 
         // Add CSS Styles
         styleSheet.addRule(".my-msg {\n" +

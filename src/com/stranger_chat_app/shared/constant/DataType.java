@@ -9,8 +9,10 @@ public enum DataType {
     RESULT_PAIR_UP,
     JOIN_CHAT_ROOM,
     CLOSE_CHAT_ROOM,
+    RINGING,
+    INCOMING_CALL,
+    START_CALLING,
     ERROR,
-
 
 //    Client Request
     LOGIN,
@@ -22,6 +24,8 @@ public enum DataType {
     SEND_FILE,
     DOWNLOAD,
     LEAVE_CHAT_ROOM,
+    CALLING,
+    END_CALL,
     LOGOUT,
     EXIT,
 }
