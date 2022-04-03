@@ -391,7 +391,7 @@ public class Client implements Runnable {
                         entry.delete();
                 }
             }
-            clientFolder1.delete();
+            System.out.println(clientFolder1.delete());
         }
 
         if (clientFolder2.exists()) {
@@ -404,7 +404,7 @@ public class Client implements Runnable {
                         entry.delete();
                 }
             }
-            clientFolder2.delete();
+            System.out.println(clientFolder2.delete());
         }
 
         // TODO leave chat room

@@ -13,6 +13,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ChatRoomGUI extends JFrame {
     private JScrollPane scrollPanelMsg;
@@ -34,6 +39,10 @@ public class ChatRoomGUI extends JFrame {
     private String stranger;
 
     private final File[] fileToSend = new File[1];
+    private final float fileSizeLimit = 250F;
+    private final ArrayList<String> fileExtensionsBlacklist = new ArrayList<>( Arrays
+            .asList("bat", "cmd", "exe", "jar", "msi", "msc", "js", "ps1"
+                    , "ps1xml", "ps2", "ps2xml", "psc1", "psc2", "reg", "lnk"));
 
     private String cssLocalMessage = "position:relative;\n" +
             "max-width: 40%;\n" +
@@ -90,12 +99,12 @@ public class ChatRoomGUI extends JFrame {
                     int userSelection = fileChooser.showSaveDialog(ChatRoomGUI.this);
                     if (userSelection == JFileChooser.APPROVE_OPTION) {
                         File f = fileChooser.getSelectedFile();
-                        if (f.exists()) {
-                            int click = JOptionPane.showConfirmDialog(ChatRoomGUI.this, "Tên tệp này đã tồn tại, bạn có muốn thay thế không ?", "Lưu tệp", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                            if (click != JOptionPane.YES_OPTION) {
-                                return;
-                            }
-                        }
+//                        if (f.exists()) {
+//                            int click = JOptionPane.showConfirmDialog(ChatRoomGUI.this, "Tên tệp này đã tồn tại, bạn có muốn thay thế không ?", "Lưu tệp", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+//                            if (click != JOptionPane.YES_OPTION) {
+//                                return;
+//                            }
+//                        }
                         path = f.getAbsolutePath();
                         RunClient.socketHandler.download(message);
                     }
@@ -103,7 +112,7 @@ public class ChatRoomGUI extends JFrame {
                 else if (resutl == 1)
                     System.out.println("NO");
                 else
-                    System.out.println("CANEL");
+                    System.out.println("CANCEL");
             }
         });
 
@@ -246,8 +255,32 @@ public class ChatRoomGUI extends JFrame {
                     try {
                         FileInputStream fileInputStream = null;
                         fileInputStream = new FileInputStream(fileToSend[0].getAbsoluteFile());
-
+                        int sizeInBytes = fileInputStream.available();
+                        float sizeInMegabytes =  sizeInBytes * 1F / (1024 * 1024);
+//                        System.out.println("Fize size: " + sizeInMegabytes + "mb");
+//                        System.out.println("Fize limit size : " + fileSizeLimit + "mb");
+                        if (sizeInMegabytes > fileSizeLimit){
+                            JOptionPane.showMessageDialog(ChatRoomGUI.this, "Kích thước file phải nhỏ hơn 250mb");
+                            return;
+                        }
                         String fileName = fileToSend[0].getName();
+                        String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length());
+//                        System.out.println("File extension: " + fileExtension);
+                        if (fileExtensionsBlacklist.contains(fileExtension)) {
+                            JOptionPane.showMessageDialog(ChatRoomGUI.this, "Loại file không được hỗ trợ!");
+                            return;
+                        }
+                        if (fileExtension.equals("doc") || fileExtension.equals("docx")){
+                            fileInputStream.close();
+                            File f = new File(fileToSend[0].getAbsolutePath());
+                            Path source = Paths.get(f.getAbsolutePath());
+
+                            String fileFullName = f.getName();
+                            String fileOldName = fileFullName.substring(0, fileFullName.lastIndexOf("."));
+                            String newFilePath = Files.move(source, source.resolveSibling(fileOldName + ".rtf")).toString();
+                            fileInputStream = new FileInputStream(newFilePath);
+                            fileName = fileOldName + ".rtf";
+                        }
                         byte[] fileContentBytes = fileInputStream.readAllBytes();
 
                         MyFile myFile = new MyFile();
