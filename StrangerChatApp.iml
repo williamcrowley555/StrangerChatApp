@@ -17,5 +17,7 @@
         <jarDirectory url="file://$MODULE_DIR$/Libraries" recursive="false" />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="commons-beanutils-1.9" level="project" />
+    <orderEntry type="library" exported="" name="Libraries" level="project" />
   </component>
 </module>

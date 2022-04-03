@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Date;
 
-public class Message implements Serializable {
+public class Message implements Serializable, Cloneable {
     private String sender;
     private String recipient;
     private String content;
@@ -87,10 +87,8 @@ public class Message implements Serializable {
         return null;
     }
 
-    public static void main(String[] args) throws IOException {
-        Message message = new Message("the sender", "the recepient", "hello");
-        String json = message.toJSONString();
-        Message received = Message.parse(json);
-        System.out.println(received);
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

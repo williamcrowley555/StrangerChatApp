@@ -2,6 +2,7 @@ package com.stranger_chat_app.client.view.gui;
 
 import com.stranger_chat_app.client.RunClient;
 import com.stranger_chat_app.client.model.MessageStore;
+import com.stranger_chat_app.server.controller.MyFile;
 import com.stranger_chat_app.shared.model.Message;
 
 import javax.swing.*;
@@ -18,8 +19,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ChatRoomGUI extends JFrame {
     private JScrollPane scrollPanelMsg;
@@ -34,6 +42,8 @@ public class ChatRoomGUI extends JFrame {
     private JLabel lblEmoji;
     private JPanel sendButtonPanel;
     private JButton btnCall;
+    private JButton chooseFileButton;
+    private JButton sendFileButton;
     private JLabel lblStranger;
     private JLabel lblStatus;
 
@@ -44,6 +54,14 @@ public class ChatRoomGUI extends JFrame {
     private String you;
     private String stranger;
 
+    private final File[] fileToSend = new File[1];
+    private final float fileSizeLimit = 250F;
+    private final ArrayList<String> fileExtensionsBlacklist = new ArrayList<>( Arrays
+            .asList("bat", "cmd", "exe", "jar", "msi", "msc", "js", "ps1"
+                    , "ps1xml", "ps2", "ps2xml", "psc1", "psc2", "reg", "lnk"));
+                    
+    public static String path;
+
     public ChatRoomGUI() {
         super();
         setTitle("Phòng chat - Bạn: " + RunClient.socketHandler.getNickname());
@@ -51,17 +69,6 @@ public class ChatRoomGUI extends JFrame {
         setSize(600, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        messageArea.addHyperlinkListener(e -> {
-            if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
-                System.out.println(e.getURL());
-                Desktop desktop = Desktop.getDesktop();
-                try {
-                    desktop.browse(e.getURL().toURI());
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
         initComponents();
 
         lblEmoji.addMouseListener(new MouseAdapter() {
@@ -133,10 +140,77 @@ public class ChatRoomGUI extends JFrame {
             }
         });
     }
+    public void addFileMessage(Message message) {
+        MessageStore.add(message);
+
+        try {
+            String htmlContent = "<a style='color: #0000EE' href=\"" + message.getContent() + "\">"+ message.getContent() + "</a> ";
+            Message htmlMessage = (Message) message.clone();
+            htmlMessage.setContent(htmlContent);
+
+            kit.insertHTML(doc, doc.getLength(),
+                    createHTMLMsg("recipient", htmlMessage),
+                    0, 0, null);
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+
+        messageArea.addHyperlinkListener(e -> {
+            if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+                int resutl = JOptionPane.showConfirmDialog(ChatRoomGUI.this, "Bạn có muỗn tải file về không ?");
+                if (resutl == 0){
+                    JFileChooser fileChooser = new JFileChooser();
+                    fileChooser.setDialogTitle("Chọn nơi để lưu file.");
+                    fileChooser.setSelectedFile(new File(e.getDescription()));
+
+                    int userSelection = fileChooser.showSaveDialog(ChatRoomGUI.this);
+                    if (userSelection == JFileChooser.APPROVE_OPTION) {
+                        File f = fileChooser.getSelectedFile();
+//                        if (f.exists()) {
+//                            int click = JOptionPane.showConfirmDialog(ChatRoomGUI.this, "Tên tệp này đã tồn tại, bạn có muốn thay thế không ?", "Lưu tệp", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+//                            if (click != JOptionPane.YES_OPTION) {
+//                                return;
+//                            }
+//                        }
+                        path = f.getAbsolutePath();
+                        RunClient.socketHandler.download(message);
+                    }
+                }
+                else if (resutl == 1)
+                    System.out.println("NO");
+                else
+                    System.out.println("CANCEL");
+            }
+        });
+
+        messageArea.setCaretPosition(messageArea.getDocument().getLength());
+    }
+
+    public void addSelfFileMessage(Message message) {
+        MessageStore.add(message);
+
+        MyFile file = MyFile.parse(message.getContent());
+        message.setContent(file.getName());
+
+        try {
+            kit.insertHTML(doc, doc.getLength(),
+                    createHTMLMsg("sender", message),
+                    0, 0, null);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        messageArea.setCaretPosition(messageArea.getDocument().getLength());
+    }
 
     public void addChatMessage(Message message) {
         MessageStore.add(message);
-
         try {
             kit.insertHTML(doc, doc.getLength(),
                     createHTMLMsg("recipient", message),
@@ -156,7 +230,6 @@ public class ChatRoomGUI extends JFrame {
 
             RunClient.socketHandler.sendChatMessage(message);
             txtMessage.setText("");
-
             try {
                 kit.insertHTML(doc, doc.getLength(),
                         createHTMLMsg("sender", message),
@@ -268,6 +341,19 @@ public class ChatRoomGUI extends JFrame {
         messageArea.setEditorKit(kit);
         messageArea.setDocument(doc);
 
+        messageArea.addHyperlinkListener(e -> {
+            if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+                if (e.getURL() != null) {
+                    Desktop desktop = Desktop.getDesktop();
+                    try {
+                        desktop.browse(e.getURL().toURI());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+
         // Generate new line of txtMessage on CTRL + ENTER
         InputMap input = txtMessage.getInputMap();
         KeyStroke enter = KeyStroke.getKeyStroke("ENTER");
@@ -300,6 +386,72 @@ public class ChatRoomGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String content = txtMessage.getText();
                 sendMessage(content);
+            }
+        });
+
+        chooseFileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Chọn file muốn gửi.");
+
+                if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
+                    fileToSend[0] = fileChooser.getSelectedFile();
+                }
+            }
+        });
+
+        sendFileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (fileToSend[0] == null){
+                    JOptionPane.showMessageDialog(ChatRoomGUI.this,"Bạn chưa chọn file để gửi.");
+                } else {
+                    try {
+                        FileInputStream fileInputStream = null;
+                        fileInputStream = new FileInputStream(fileToSend[0].getAbsoluteFile());
+                        int sizeInBytes = fileInputStream.available();
+                        float sizeInMegabytes =  sizeInBytes * 1F / (1024 * 1024);
+//                        System.out.println("Fize size: " + sizeInMegabytes + "mb");
+//                        System.out.println("Fize limit size : " + fileSizeLimit + "mb");
+                        if (sizeInMegabytes > fileSizeLimit){
+                            JOptionPane.showMessageDialog(ChatRoomGUI.this, "Kích thước file phải nhỏ hơn 250mb");
+                            return;
+                        }
+                        String fileName = fileToSend[0].getName();
+                        String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length());
+//                        System.out.println("File extension: " + fileExtension);
+                        if (fileExtensionsBlacklist.contains(fileExtension)) {
+                            JOptionPane.showMessageDialog(ChatRoomGUI.this, "Loại file không được hỗ trợ!");
+                            return;
+                        }
+                        if (fileExtension.equals("doc") || fileExtension.equals("docx")){
+                            fileInputStream.close();
+                            File f = new File(fileToSend[0].getAbsolutePath());
+                            Path source = Paths.get(f.getAbsolutePath());
+
+                            String fileFullName = f.getName();
+                            String fileOldName = fileFullName.substring(0, fileFullName.lastIndexOf("."));
+                            String newFilePath = Files.move(source, source.resolveSibling(fileOldName + ".rtf")).toString();
+                            fileInputStream = new FileInputStream(newFilePath);
+                            fileName = fileOldName + ".rtf";
+                        }
+                        byte[] fileContentBytes = fileInputStream.readAllBytes();
+
+                        MyFile myFile = new MyFile();
+                        myFile.setName(fileName);
+                        myFile.setData(fileContentBytes);
+
+                        Message message = new Message(you, stranger, myFile.toJSONString());
+
+                        RunClient.socketHandler.sendFile(message);
+                        addSelfFileMessage(message);
+                    } catch (FileNotFoundException ex) {
+                        ex.printStackTrace();
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+                }
             }
         });
     }

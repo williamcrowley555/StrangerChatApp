@@ -6,6 +6,7 @@ import com.stranger_chat_app.shared.constant.DataType;
 import com.stranger_chat_app.shared.model.Data;
 import com.stranger_chat_app.shared.model.Message;
 import com.stranger_chat_app.shared.security.AESUtil;
+import com.stranger_chat_app.shared.security.BytesUtil;
 import com.stranger_chat_app.shared.security.RSAUtil;
 
 import javax.crypto.BadPaddingException;
@@ -84,6 +85,14 @@ public class Client implements Runnable {
 
                         case CHAT_MESSAGE:
                             onReceiveChatMessage(receivedContent);
+                            break;
+
+                        case SEND_FILE:
+                            onReceiveFile(receivedContent);
+                            break;
+
+                        case DOWNLOAD:
+                            onDownload(receivedContent);
                             break;
 
                         case LEAVE_CHAT_ROOM:
@@ -281,6 +290,83 @@ public class Client implements Runnable {
         }
     }
 
+    private void onReceiveFile(String received) {
+        Message message = Message.parse(received);
+        Client stranger = RunServer.clientManager.find(message.getRecipient());
+        MyFile myFile = MyFile.parse(message.getContent());
+
+        File filesFolder = new File(System.getProperty("user.dir")
+                + "\\src\\com\\stranger_chat_app\\server\\client-files");
+        if (!filesFolder.exists()) {
+            filesFolder.mkdir();
+        }
+
+        File clientFolder = new File(filesFolder.getAbsolutePath() + "\\" + message.getSender());
+        if (!clientFolder.exists()) {
+            clientFolder.mkdir();
+        }
+
+        try {
+            FileOutputStream output = new FileOutputStream(
+                    new File(clientFolder.getAbsolutePath() + "\\" + myFile.getName()));
+            output.write(myFile.getData());
+            output.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+
+        if (stranger != null) {
+            // send message to stranger
+            stranger.sendData(DataType.SEND_FILE, received);
+        }
+    }
+
+    private void onDownload(String received) {
+        Message message = Message.parse(received);
+        File filesFolder = new File(System.getProperty("user.dir")
+                + "\\src\\com\\stranger_chat_app\\server\\client-files");
+        File clientFolder = new File(filesFolder.getAbsolutePath() + "\\" + message.getSender());
+        if (!clientFolder.exists()) {
+            clientFolder.mkdir();
+        }
+
+        File fileToDowload = new File(filesFolder.getAbsolutePath() + "\\" + message.getSender() +
+                "\\" + message.getContent());
+        if (!fileToDowload.exists()) {
+            System.out.println("Not exist");
+        } else {
+            System.out.println("Found");
+            Client stranger = RunServer.clientManager.find(message.getRecipient());
+
+            if (stranger != null) {
+                // send message to stranger
+                FileInputStream fileInputStream = null;
+                try {
+                    fileInputStream = new FileInputStream(fileToDowload.getAbsoluteFile());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                String fileName = fileToDowload.getName();
+                byte[] fileContentBytes = new byte[0];
+                try {
+                    fileContentBytes = fileInputStream.readAllBytes();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                MyFile myFile = new MyFile();
+                myFile.setName(fileName);
+                myFile.setData(fileContentBytes);
+                message.setContent(myFile.toJSONString());
+
+                stranger.sendData(DataType.DOWNLOAD, message.toJSONString());
+            }
+        }
+    }
+
     private void onReceiveLeaveChatRoom(String received) {
         // reset rejected clients of both
         this.rejectedClients.clear();
@@ -288,6 +374,38 @@ public class Client implements Runnable {
 
         // notify the stranger that you have exited
         this.stranger.sendData(DataType.CLOSE_CHAT_ROOM, this.nickname + " đã thoát phòng");
+
+        // delete folder when client exit
+        File filesFolder = new File(System.getProperty("user.dir")
+                + "\\src\\com\\stranger_chat_app\\server\\client-files");
+        File clientFolder1 = new File(filesFolder.getAbsolutePath() + "\\" + this.stranger.nickname);
+        File clientFolder2 = new File(filesFolder.getAbsolutePath() + "\\" + this.nickname);
+
+        if (clientFolder1.exists()) {
+            String[] list = clientFolder1.list();
+
+            if (list != null) {
+                for (int i = 0; i < list.length; i++) {
+                    File entry = new File(clientFolder1, list[i]);
+                    if (entry.exists())
+                        entry.delete();
+                }
+            }
+            System.out.println(clientFolder1.delete());
+        }
+
+        if (clientFolder2.exists()) {
+            String[] list = clientFolder2.list();
+
+            if (list != null) {
+                for (int i = 0; i < list.length; i++) {
+                    File entry = new File(clientFolder2, list[i]);
+                    if (entry.exists())
+                        entry.delete();
+                }
+            }
+            System.out.println(clientFolder2.delete());
+        }
 
         // TODO leave chat room
         sendData(DataType.LEAVE_CHAT_ROOM, null);

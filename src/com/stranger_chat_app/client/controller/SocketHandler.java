@@ -3,10 +3,13 @@ package com.stranger_chat_app.client.controller;
 import com.stranger_chat_app.client.RunClient;
 import com.stranger_chat_app.client.view.enums.GUIName;
 import com.stranger_chat_app.client.view.enums.MainMenuState;
+import com.stranger_chat_app.client.view.gui.ChatRoomGUI;
+import com.stranger_chat_app.server.controller.MyFile;
 import com.stranger_chat_app.shared.constant.DataType;
 import com.stranger_chat_app.shared.model.Data;
 import com.stranger_chat_app.shared.model.Message;
 import com.stranger_chat_app.shared.security.AESUtil;
+import com.stranger_chat_app.shared.security.BytesUtil;
 import com.stranger_chat_app.shared.security.RSAUtil;
 
 import javax.crypto.BadPaddingException;
@@ -18,6 +21,7 @@ import java.io.*;
 import java.net.Socket;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,6 +37,7 @@ public class SocketHandler {
 
     PublicKey publicKey;
     SecretKey secretKey;
+    static ArrayList<MyFile> myFiles = new ArrayList<>();
 
     public boolean connect(String hostname, int port) {
         try {
@@ -113,6 +118,14 @@ public class SocketHandler {
 
                         case CHAT_MESSAGE:
                             onReceiveChatMessage(receivedContent);
+                            break;
+
+                        case SEND_FILE:
+                            onReceiveFile(receivedContent);
+                            break;
+
+                        case DOWNLOAD:
+                            onDownload(receivedContent);
                             break;
 
                         case LEAVE_CHAT_ROOM:
@@ -299,6 +312,36 @@ public class SocketHandler {
         RunClient.chatRoomGUI.addChatMessage(message);
     }
 
+    private void onReceiveFile(String received) {
+        // convert received JSON message to Message
+        Message message = Message.parse(received);
+        MyFile myFile = MyFile.parse(message.getContent());
+        message.setContent(myFile.getName());
+        RunClient.chatRoomGUI.addFileMessage(message);
+    }
+
+    private void onDownload(String received) {
+        // convert received JSON message to Message
+        Message message = Message.parse(received);
+        MyFile myFile = MyFile.parse(message.getContent());
+
+            if (ChatRoomGUI.path != null)
+            {
+                try {
+                    FileOutputStream output = new FileOutputStream(
+                            new File(ChatRoomGUI.path));
+                    output.write(myFile.getData());
+                    output.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            } else {
+                System.out.println("Chưa chọn đường dẫn");
+            }
+    }
+
     private void onReceiveLeaveChatRoom(String received) {
         // change GUI
         RunClient.closeGUI(GUIName.CHAT_ROOM);
@@ -354,6 +397,14 @@ public class SocketHandler {
 
     public void sendChatMessage(Message message) {
         sendData(DataType.CHAT_MESSAGE, message.toJSONString());
+    }
+
+    public void sendFile(Message message) {
+        sendData(DataType.SEND_FILE, message.toJSONString());
+    }
+
+    public void download(Message message) {
+        sendData(DataType.DOWNLOAD, message.toJSONString());
     }
 
     public void leaveChatRoom() {
