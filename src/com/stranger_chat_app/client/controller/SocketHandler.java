@@ -37,7 +37,6 @@ public class SocketHandler {
 
     PublicKey publicKey;
     SecretKey secretKey;
-    static ArrayList<MyFile> myFiles = new ArrayList<>();
 
     public boolean connect(String hostname, int port) {
         try {
