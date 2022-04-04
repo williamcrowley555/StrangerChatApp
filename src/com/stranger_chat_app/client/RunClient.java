@@ -122,6 +122,7 @@ public class RunClient {
 
                 case CALL:
                     callGUI.stopAudio();
+                    callGUI.stopMicrophone();
                     callGUI.dispose();
                     break;
 

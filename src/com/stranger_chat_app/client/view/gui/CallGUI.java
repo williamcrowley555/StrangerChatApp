@@ -1,12 +1,15 @@
 package com.stranger_chat_app.client.view.gui;
 
 import com.stranger_chat_app.client.RunClient;
+import com.stranger_chat_app.client.thread.VoiceRecorder;
 import com.stranger_chat_app.client.util.AudioUtils;
 import com.stranger_chat_app.client.view.enums.CallState;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -26,6 +29,8 @@ public class CallGUI extends JFrame{
 
     private String audioDir = System.getProperty("user.dir") + "\\src\\com\\stranger_chat_app\\client\\asset\\audio\\";
     private AudioUtils audio;
+
+    private VoiceRecorder microphone;
 
     private String stranger;
 
@@ -64,6 +69,8 @@ public class CallGUI extends JFrame{
                 break;
 
             case CALLING:
+                stopAudio();
+                voiceCheckBox.setSelected(false);
                 btnAcceptCall.setVisible(false);
                 btnAcceptCall.setEnabled(false);
                 break;
@@ -74,7 +81,7 @@ public class CallGUI extends JFrame{
     }
 
     private void showAllComponents() {
-        cameraCheckBox.setEnabled(true);
+        voiceCheckBox.setEnabled(true);
         cameraCheckBox.setEnabled(true);
         btnAcceptCall.setVisible(true);
         btnAcceptCall.setEnabled(true);
@@ -96,7 +103,15 @@ public class CallGUI extends JFrame{
     }
 
     public void stopAudio() {
-        audio.stop();
+        if (audio != null) {
+            audio.stop();
+        }
+    }
+
+    public void stopMicrophone() {
+        if (microphone != null && microphone.isCalling()) {
+            microphone.terminate();
+        }
     }
 
     public void setStranger(String stranger) {
@@ -105,11 +120,36 @@ public class CallGUI extends JFrame{
     }
 
     private void initComponents() {
+        btnAcceptCall.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                RunClient.socketHandler.acceptCall(stranger);
+            }
+        });
+
         btnEndCall.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                System.out.println("END CALL");
                 RunClient.socketHandler.endCall(stranger);
+            }
+        });
+
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                RunClient.socketHandler.endCall(stranger);
+            }
+        });
+
+        voiceCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    microphone = new VoiceRecorder();
+                    microphone.start();
+                } else {
+                    microphone.terminate();
+                }
             }
         });
     }

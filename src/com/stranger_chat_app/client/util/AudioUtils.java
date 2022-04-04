@@ -71,19 +71,4 @@ public class AudioUtils {
     public void setAudio(Clip audio) {
         this.audio = audio;
     }
-
-    public static void main(String[] args) {
-        String ringingAudioPath = System.getProperty("user.dir") + "\\src\\com\\stranger_chat_app\\client\\asset\\audio\\ringing.wav";
-        System.out.println(ringingAudioPath);
-        AudioUtils audio = new AudioUtils(ringingAudioPath);
-        try {
-            audio.start(true);
-        } catch (UnsupportedAudioFileException e) {
-            e.printStackTrace();
-        } catch (LineUnavailableException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }

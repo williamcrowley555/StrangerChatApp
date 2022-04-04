@@ -25,7 +25,9 @@ public enum DataType {
     DOWNLOAD,
     LEAVE_CHAT_ROOM,
     CALLING,
+    ACCEPT_CALL,
     END_CALL,
+    VOICE,
     LOGOUT,
     EXIT,
 }
