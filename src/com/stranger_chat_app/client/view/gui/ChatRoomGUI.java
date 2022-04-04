@@ -74,10 +74,14 @@ public class ChatRoomGUI extends JFrame {
         initComponents();
         sendFileButton.setEnabled(false);
     }
-    public void addFileMessage(Message message) {
+    public void addFileMessage(Message message, String... fileName) {
         MessageStore.add(message);
-        //System.out.println(message);
-        String content = "<a style='color: #0000EE' href=\"" + message.getContent() + "\">"+ message.getContent() + "</a> ";
+        String content = "";
+        if (fileName.length != 0)
+            content = "<a style='color: #0000EE' href=\"" + fileName[0] + "\">"+ fileName[0] + "</a> ";
+        else
+            content = "<a style='color: #0000EE' href=\"" + message.getContent() + "\">"+ message.getContent() + "</a> ";
+
         try {
             doc.insertAfterEnd(doc.getCharacterElement(doc.getLength()),
                     "<div style='background-color: #ebebeb; margin: 0 0 10px 0;'><pre style='color: #000;'>"
@@ -87,10 +91,16 @@ public class ChatRoomGUI extends JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        /*FileName null: file receive from stranger.
+         *         not null: self file download.    */
+        addEventHyperlinkMessage(message, fileName.length != 0 ? true : false);
+        messageArea.setCaretPosition(messageArea.getDocument().getLength());
+    }
+
+    public void addEventHyperlinkMessage(Message message, boolean selfDownload){
         if (eventNotAdded){
             messageArea.addHyperlinkListener(e -> {
                 if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
-                    //System.out.println(e.getDescription());
                     int resutl = JOptionPane.showConfirmDialog(ChatRoomGUI.this, "Bạn có muỗn tải file về không ?");
                     if (resutl == 0){
                         JFileChooser fileChooser = new JFileChooser();
@@ -108,7 +118,9 @@ public class ChatRoomGUI extends JFrame {
 //                        }
                             path = f.getAbsolutePath();
                             message.setContent(e.getDescription());
-//                            System.out.println(message.toJSONString());
+                            if(selfDownload)
+                                message.setRecipient(message.getSender());
+                            System.out.println(message.toJSONString());
                             RunClient.socketHandler.download(message);
                         }
                     }
@@ -120,24 +132,7 @@ public class ChatRoomGUI extends JFrame {
             });
             eventNotAdded = false;
         }
-        messageArea.setCaretPosition(messageArea.getDocument().getLength());
     }
-
-    public void addSelfFileMessage(Message message, String fileName) {
-        MessageStore.add(message);
-        try {
-            doc.insertAfterEnd(doc.getCharacterElement(doc.getLength()),
-                    "<div style='background-color: #ebebeb; margin: 0 0 10px 0;'><pre style='color: #000;'>"
-                            + "<span style='color: red;'>" + message.getSender() + ": </span>" + "Bạn đã gửi file: '" + fileName + "'" +"</pre></div><br/>");
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        messageArea.setCaretPosition(messageArea.getDocument().getLength());
-    }
-
     public void addChatMessage(Message message) {
         MessageStore.add(message);
         try {
@@ -293,9 +288,9 @@ public class ChatRoomGUI extends JFrame {
                         Message message = new Message(you, stranger, myFile.toJSONString());
 
                         RunClient.socketHandler.sendFile(message);
-                        addSelfFileMessage(message, myFile.getName());
+                        addFileMessage(message, myFile.getName());
                     } catch (FileNotFoundException ex) {
-                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(ChatRoomGUI.this, "Không tìm thấy file đã chọn, vui lòng chọn lại!");
                     } catch (IOException ioException) {
                         ioException.printStackTrace();
                     }
