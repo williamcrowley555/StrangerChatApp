@@ -62,6 +62,8 @@ public class ChatRoomGUI extends JFrame {
                     
     public static String path;
 
+    private boolean isCalling = false;
+
     public ChatRoomGUI() {
         super();
         setTitle("Phòng chat - Bạn: " + RunClient.socketHandler.getNickname());
@@ -70,75 +72,6 @@ public class ChatRoomGUI extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         initComponents();
-
-        lblEmoji.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                //Values to position the emojiDialog
-                int offsetX = 0,
-                    offsetY = -240;
-
-                //Get position of label that trigger the event
-                JLabel label = (JLabel) e.getSource();
-                Point lablePosition = label.getLocationOnScreen();
-
-                JDialog emojiDialog = new JDialog();
-
-                //Set location
-                emojiDialog.setLocation(lablePosition.x + offsetX, lablePosition.y + offsetY + label.getHeight());
-
-                Object[][] emojiMatrix = new Object[6][6];
-                int emojiCode = 0x1F601;
-                for (int i = 0; i < 6; i++) {
-                    for (int j = 0; j < 6; j++)
-                        emojiMatrix[i][j] = new String(Character.toChars(emojiCode++));
-                }
-
-                JTable emojiTable = new JTable();
-                emojiTable.setModel(new DefaultTableModel(emojiMatrix, new String[] { "", "", "", "", "", "" }) {
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    public boolean isCellEditable(int row, int column) {
-                        return false;
-                    }
-                });
-                emojiTable.setFont(new Font("Dialog", Font.PLAIN, 20));
-                emojiTable.setShowGrid(false);
-                emojiTable.setIntercellSpacing(new Dimension(0, 0));
-                emojiTable.setRowHeight(30);
-                emojiTable.getTableHeader().setVisible(false);
-
-                DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-                centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-                for (int i = 0; i < emojiTable.getColumnCount(); i++) {
-                    emojiTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
-                    emojiTable.getColumnModel().getColumn(i).setMaxWidth(30);
-                }
-                emojiTable.setCellSelectionEnabled(true);
-                emojiTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-                emojiTable.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        txtMessage.setText(txtMessage.getText() + emojiTable
-                                .getValueAt(emojiTable.rowAtPoint(e.getPoint()), emojiTable.columnAtPoint(e.getPoint())));
-                    }
-                });
-
-                emojiDialog.setContentPane(emojiTable);
-                emojiDialog.setTitle("Chọn emoji");
-                emojiDialog.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
-                emojiDialog.pack();
-                emojiDialog.setVisible(true);
-            }
-        });
-
-        lblCall.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                RunClient.socketHandler.call(stranger);
-            }
-        });
     }
     public void addFileMessage(Message message) {
         MessageStore.add(message);
@@ -454,6 +387,77 @@ public class ChatRoomGUI extends JFrame {
                 }
             }
         });
+
+        lblEmoji.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                //Values to position the emojiDialog
+                int offsetX = 0,
+                        offsetY = -240;
+
+                //Get position of label that trigger the event
+                JLabel label = (JLabel) e.getSource();
+                Point lablePosition = label.getLocationOnScreen();
+
+                JDialog emojiDialog = new JDialog();
+
+                //Set location
+                emojiDialog.setLocation(lablePosition.x + offsetX, lablePosition.y + offsetY + label.getHeight());
+
+                Object[][] emojiMatrix = new Object[6][6];
+                int emojiCode = 0x1F601;
+                for (int i = 0; i < 6; i++) {
+                    for (int j = 0; j < 6; j++)
+                        emojiMatrix[i][j] = new String(Character.toChars(emojiCode++));
+                }
+
+                JTable emojiTable = new JTable();
+                emojiTable.setModel(new DefaultTableModel(emojiMatrix, new String[] { "", "", "", "", "", "" }) {
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    public boolean isCellEditable(int row, int column) {
+                        return false;
+                    }
+                });
+                emojiTable.setFont(new Font("Dialog", Font.PLAIN, 20));
+                emojiTable.setShowGrid(false);
+                emojiTable.setIntercellSpacing(new Dimension(0, 0));
+                emojiTable.setRowHeight(30);
+                emojiTable.getTableHeader().setVisible(false);
+
+                DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+                centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+                for (int i = 0; i < emojiTable.getColumnCount(); i++) {
+                    emojiTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+                    emojiTable.getColumnModel().getColumn(i).setMaxWidth(30);
+                }
+                emojiTable.setCellSelectionEnabled(true);
+                emojiTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                emojiTable.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        txtMessage.setText(txtMessage.getText() + emojiTable
+                                .getValueAt(emojiTable.rowAtPoint(e.getPoint()), emojiTable.columnAtPoint(e.getPoint())));
+                    }
+                });
+
+                emojiDialog.setContentPane(emojiTable);
+                emojiDialog.setTitle("Chọn emoji");
+                emojiDialog.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
+                emojiDialog.pack();
+                emojiDialog.setVisible(true);
+            }
+        });
+
+        lblCall.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (isCalling == false) {
+                    RunClient.socketHandler.call(stranger);
+                }
+            }
+        });
     }
 
     public void setClients(String you, String stranger) {
@@ -478,4 +482,11 @@ public class ChatRoomGUI extends JFrame {
         this.stranger = stranger;
     }
 
+    public boolean isCalling() {
+        return isCalling;
+    }
+
+    public void setCalling(boolean calling) {
+        isCalling = calling;
+    }
 }

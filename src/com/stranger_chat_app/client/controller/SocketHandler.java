@@ -389,12 +389,14 @@ public class SocketHandler {
         RunClient.openGUI(GUIName.CALL);
         RunClient.callGUI.setDisplayState(CallState.RINGING);
         RunClient.callGUI.setStranger(received);
+        RunClient.chatRoomGUI.setCalling(true);
     }
 
     private void onReceiveIncomingCall(String received) {
         RunClient.openGUI(GUIName.CALL);
         RunClient.callGUI.setDisplayState(CallState.INCOMING_CALL);
         RunClient.callGUI.setStranger(received);
+        RunClient.chatRoomGUI.setCalling(true);
     }
 
     private void onReceiveAcceptCall(String received) {
@@ -403,6 +405,7 @@ public class SocketHandler {
 
     private void onReceiveEndCall(String received) {
         RunClient.closeGUI(GUIName.CALL);
+        RunClient.chatRoomGUI.setCalling(false);
 
         // show notification
         JOptionPane.showMessageDialog(
