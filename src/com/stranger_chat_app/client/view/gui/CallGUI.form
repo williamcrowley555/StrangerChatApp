@@ -14,14 +14,64 @@
           <color color="-16777216"/>
         </border>
         <children>
-          <grid id="84cb9" binding="videoPanel" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="84cb9" binding="pnlScreen" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints border-constraint="Center"/>
             <properties>
               <background color="-1246721"/>
             </properties>
             <border type="etched"/>
-            <children/>
+            <children>
+              <grid id="972b5" binding="pnlInfo" layout-manager="GridLayoutManager" row-count="4" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="f0100" class="javax.swing.JLabel" binding="lblUserAvatar">
+                    <constraints>
+                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <icon value="com/stranger_chat_app/client/asset/user-avatar.png"/>
+                      <text value=""/>
+                    </properties>
+                  </component>
+                  <component id="7a16c" class="javax.swing.JLabel" binding="lblNickname">
+                    <constraints>
+                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <horizontalAlignment value="0"/>
+                      <horizontalTextPosition value="0"/>
+                      <text value="Nickname"/>
+                    </properties>
+                  </component>
+                  <hspacer id="d1ac7">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                  </hspacer>
+                  <vspacer id="96caf">
+                    <constraints>
+                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                  </vspacer>
+                  <vspacer id="6c415">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                  </vspacer>
+                  <hspacer id="75f3c">
+                    <constraints>
+                      <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                  </hspacer>
+                </children>
+              </grid>
+            </children>
           </grid>
           <grid id="6c731" binding="buttonsPanel" layout-manager="FlowLayout" hgap="30" vgap="30" flow-align="1">
             <constraints border-constraint="South"/>
@@ -30,22 +80,34 @@
             </properties>
             <border type="none"/>
             <children>
-              <component id="31133" class="javax.swing.JCheckBox" binding="cameraCheckBox" default-binding="true">
-                <constraints/>
-                <properties>
-                  <text value="Camera"/>
-                </properties>
-              </component>
               <component id="b0124" class="javax.swing.JCheckBox" binding="voiceCheckBox" default-binding="true">
                 <constraints/>
                 <properties>
                   <text value="Voice"/>
                 </properties>
               </component>
-              <component id="afa6a" class="javax.swing.JButton" binding="endCallButton" default-binding="true">
+              <component id="31133" class="javax.swing.JCheckBox" binding="cameraCheckBox" default-binding="true">
                 <constraints/>
                 <properties>
-                  <text value="End Call"/>
+                  <text value="Camera"/>
+                </properties>
+              </component>
+              <component id="c8076" class="javax.swing.JButton" binding="btnAcceptCall">
+                <constraints/>
+                <properties>
+                  <actionCommand value=""/>
+                  <icon value="com/stranger_chat_app/client/asset/accept-call.png"/>
+                  <label value=""/>
+                  <opaque value="false"/>
+                  <text value=""/>
+                </properties>
+              </component>
+              <component id="afa6a" class="javax.swing.JButton" binding="btnEndCall">
+                <constraints/>
+                <properties>
+                  <icon value="com/stranger_chat_app/client/asset/decline-call.png"/>
+                  <label value=""/>
+                  <text value=""/>
                 </properties>
               </component>
             </children>

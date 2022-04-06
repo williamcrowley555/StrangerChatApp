@@ -85,6 +85,9 @@ public class MainMenuGUI extends JFrame {
                 btnLogout.setEnabled(false);
                 lblWaiting.setText("Đang chờ phản hồi từ đối phương..");
                 break;
+
+            default:
+                break;
         }
     }
 

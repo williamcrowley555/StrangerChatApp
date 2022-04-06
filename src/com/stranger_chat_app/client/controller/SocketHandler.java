@@ -1,21 +1,24 @@
 package com.stranger_chat_app.client.controller;
 
 import com.stranger_chat_app.client.RunClient;
+import com.stranger_chat_app.client.view.enums.CallState;
 import com.stranger_chat_app.client.view.enums.GUIName;
 import com.stranger_chat_app.client.view.enums.MainMenuState;
 import com.stranger_chat_app.client.view.gui.ChatRoomGUI;
+import com.stranger_chat_app.server.RunServer;
+import com.stranger_chat_app.server.controller.Client;
 import com.stranger_chat_app.server.controller.MyFile;
 import com.stranger_chat_app.shared.constant.DataType;
 import com.stranger_chat_app.shared.model.Data;
 import com.stranger_chat_app.shared.model.Message;
 import com.stranger_chat_app.shared.security.AESUtil;
-import com.stranger_chat_app.shared.security.BytesUtil;
 import com.stranger_chat_app.shared.security.RSAUtil;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
@@ -30,6 +33,8 @@ public class SocketHandler {
     private Socket socket;
     private ObjectOutput out;
     private ObjectInput in;
+
+    SourceDataLine speaker = null;
 
     String nickname = null; // lưu nickname hiện tại
 
@@ -133,6 +138,26 @@ public class SocketHandler {
 
                         case CLOSE_CHAT_ROOM:
                             onReceiveCloseChatRoom(receivedContent);
+                            break;
+
+                        case RINGING:
+                            onReceiveRinging(receivedContent);
+                            break;
+
+                        case INCOMING_CALL:
+                            onReceiveIncomingCall(receivedContent);
+                            break;
+
+                        case ACCEPT_CALL:
+                            onReceiveAcceptCall(receivedContent);
+                            break;
+
+                        case END_CALL:
+                            onReceiveEndCall(receivedContent);
+                            break;
+
+                        case VOICE:
+                            onReceiveVoice(receivedContent);
                             break;
 
                         case LOGOUT:
@@ -368,6 +393,55 @@ public class SocketHandler {
         );
     }
 
+    private void onReceiveRinging(String received) {
+        RunClient.openGUI(GUIName.CALL);
+        RunClient.callGUI.setDisplayState(CallState.RINGING);
+        RunClient.callGUI.setStranger(received);
+        RunClient.chatRoomGUI.setCalling(true);
+    }
+
+    private void onReceiveIncomingCall(String received) {
+        RunClient.openGUI(GUIName.CALL);
+        RunClient.callGUI.setDisplayState(CallState.INCOMING_CALL);
+        RunClient.callGUI.setStranger(received);
+        RunClient.chatRoomGUI.setCalling(true);
+    }
+
+    private void onReceiveAcceptCall(String received) {
+        RunClient.callGUI.setDisplayState(CallState.CALLING);
+    }
+
+    private void onReceiveEndCall(String received) {
+        RunClient.closeGUI(GUIName.CALL);
+        RunClient.chatRoomGUI.setCalling(false);
+
+        // show notification
+        JOptionPane.showMessageDialog(
+                RunClient.chatRoomGUI,
+                "Kết thúc cuộc gọi", "Đóng",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    private void onReceiveVoice(String received) {
+        if (speaker == null) {
+            AudioFormat format = new AudioFormat(16000, 8, 2, true, true);
+            DataLine.Info dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
+
+            try {
+                // Selecting and starting speaker
+                speaker = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
+                speaker.open(format);
+                speaker.start();
+            } catch (LineUnavailableException e) {
+                e.printStackTrace();
+            }
+        }
+
+        byte[] buffer = Base64.getDecoder().decode(received);
+        speaker.write(buffer, 0, buffer.length);
+    }
+
     private void onReceiveLogout(String received) {
         // xóa nickname
         this.nickname = null;
@@ -380,6 +454,10 @@ public class SocketHandler {
     private void onReceiveExit(String received) {
         // đóng tất cả GUIs
         RunClient.closeAllGUIs();
+    }
+
+    private void initSpeaker() {
+
     }
 
     public void login(String nickname) {
@@ -416,6 +494,22 @@ public class SocketHandler {
 
     public void leaveChatRoom() {
         sendData(DataType.LEAVE_CHAT_ROOM, null);
+    }
+
+    public void call(String stranger) {
+        sendData(DataType.CALLING, stranger);
+    }
+
+    public void acceptCall(String stranger) {
+        sendData(DataType.ACCEPT_CALL, stranger);
+    }
+
+    public void endCall(String stranger) {
+        sendData(DataType.END_CALL, stranger);
+    }
+
+    public void sendVoice(String data) {
+        sendData(DataType.VOICE, data);
     }
 
     public void logout() {
