@@ -361,6 +361,7 @@ public class SocketHandler {
                                 new File(ChatRoomGUI.path));
                         output.write(myFile.getData());
                         output.close();
+                        JOptionPane.showMessageDialog(null,"Lưu thành công!");
                     }
                     else
                         JOptionPane.showMessageDialog(null,"Định dạng file lưu khác file gốc, lưu file thất bại!");
