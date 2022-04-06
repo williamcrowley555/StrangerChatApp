@@ -61,7 +61,7 @@ public class ChatRoomGUI extends JFrame {
                     , "ps1xml", "ps2", "ps2xml", "psc1", "psc2", "reg", "lnk"));
                     
     public static String path;
-
+    private boolean eventNotAdded = true;
     public ChatRoomGUI() {
         super();
         setTitle("Phòng chat - Bạn: " + RunClient.socketHandler.getNickname());
@@ -139,17 +139,28 @@ public class ChatRoomGUI extends JFrame {
                 call.setVisible(true);
             }
         });
+        sendFileButton.setEnabled(false);
     }
-    public void addFileMessage(Message message) {
+    
+    public void addFileMessage(Message message, String... fileName) {
         MessageStore.add(message);
+        String htmlContent = "";
+        String userType = "";
+
+        if (fileName.length != 0) {
+            userType = "sender";
+            htmlContent = "<a style='color: #0000EE' href=\"" + fileName[0] + "\">"+ fileName[0] + "</a> ";
+        } else {
+            userType = "recipient";
+            htmlContent = "<a style='color: #0000EE' href=\"" + message.getContent() + "\">"+ message.getContent() + "</a> ";
+        }
 
         try {
-            String htmlContent = "<a style='color: #0000EE' href=\"" + message.getContent() + "\">"+ message.getContent() + "</a> ";
             Message htmlMessage = (Message) message.clone();
             htmlMessage.setContent(htmlContent);
 
             kit.insertHTML(doc, doc.getLength(),
-                    createHTMLMsg("recipient", htmlMessage),
+                    createHTMLMsg(userType, htmlMessage),
                     0, 0, null);
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
@@ -158,57 +169,48 @@ public class ChatRoomGUI extends JFrame {
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
+        /*FileName null: file receive from stranger.
+         *         not null: self file download.    */
+        addEventHyperlinkMessage(message, fileName.length != 0 ? true : false);
+        messageArea.setCaretPosition(messageArea.getDocument().getLength());
+    }
 
-        messageArea.addHyperlinkListener(e -> {
-            if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
-                int resutl = JOptionPane.showConfirmDialog(ChatRoomGUI.this, "Bạn có muỗn tải file về không ?");
-                if (resutl == 0){
-                    JFileChooser fileChooser = new JFileChooser();
-                    fileChooser.setDialogTitle("Chọn nơi để lưu file.");
-                    fileChooser.setSelectedFile(new File(e.getDescription()));
+    public void addEventHyperlinkMessage(Message message, boolean selfDownload){
+        if (eventNotAdded){
+            messageArea.addHyperlinkListener(e -> {
+                if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+                    int resutl = JOptionPane.showConfirmDialog(ChatRoomGUI.this, "Bạn có muỗn tải file về không ?");
+                    if (resutl == 0){
+                        JFileChooser fileChooser = new JFileChooser();
+                        fileChooser.setDialogTitle("Chọn nơi để lưu file.");
+                        fileChooser.setSelectedFile(new File(e.getDescription()));
 
-                    int userSelection = fileChooser.showSaveDialog(ChatRoomGUI.this);
-                    if (userSelection == JFileChooser.APPROVE_OPTION) {
-                        File f = fileChooser.getSelectedFile();
+                        int userSelection = fileChooser.showSaveDialog(ChatRoomGUI.this);
+                        if (userSelection == JFileChooser.APPROVE_OPTION) {
+                            File f = fileChooser.getSelectedFile();
 //                        if (f.exists()) {
 //                            int click = JOptionPane.showConfirmDialog(ChatRoomGUI.this, "Tên tệp này đã tồn tại, bạn có muốn thay thế không ?", "Lưu tệp", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 //                            if (click != JOptionPane.YES_OPTION) {
 //                                return;
 //                            }
 //                        }
-                        path = f.getAbsolutePath();
-                        RunClient.socketHandler.download(message);
+                            path = f.getAbsolutePath();
+                            message.setContent(e.getDescription());
+                            if(selfDownload)
+                                message.setRecipient(message.getSender());
+                            System.out.println(message.toJSONString());
+                            RunClient.socketHandler.download(message);
+                        }
                     }
+                    else if (resutl == 1)
+                        System.out.println("NO");
+                    else
+                        System.out.println("CANCEL");
                 }
-                else if (resutl == 1)
-                    System.out.println("NO");
-                else
-                    System.out.println("CANCEL");
-            }
-        });
-
-        messageArea.setCaretPosition(messageArea.getDocument().getLength());
-    }
-
-    public void addSelfFileMessage(Message message) {
-        MessageStore.add(message);
-
-        MyFile file = MyFile.parse(message.getContent());
-        message.setContent(file.getName());
-
-        try {
-            kit.insertHTML(doc, doc.getLength(),
-                    createHTMLMsg("sender", message),
-                    0, 0, null);
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            });
+            eventNotAdded = false;
         }
-
-        messageArea.setCaretPosition(messageArea.getDocument().getLength());
     }
-
     public void addChatMessage(Message message) {
         MessageStore.add(message);
         try {
@@ -398,6 +400,7 @@ public class ChatRoomGUI extends JFrame {
                 if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
                     fileToSend[0] = fileChooser.getSelectedFile();
                 }
+                sendFileButton.setEnabled(true);
             }
         });
 
@@ -412,8 +415,6 @@ public class ChatRoomGUI extends JFrame {
                         fileInputStream = new FileInputStream(fileToSend[0].getAbsoluteFile());
                         int sizeInBytes = fileInputStream.available();
                         float sizeInMegabytes =  sizeInBytes * 1F / (1024 * 1024);
-//                        System.out.println("Fize size: " + sizeInMegabytes + "mb");
-//                        System.out.println("Fize limit size : " + fileSizeLimit + "mb");
                         if (sizeInMegabytes > fileSizeLimit){
                             JOptionPane.showMessageDialog(ChatRoomGUI.this, "Kích thước file phải nhỏ hơn 250mb");
                             return;
@@ -445,13 +446,14 @@ public class ChatRoomGUI extends JFrame {
                         Message message = new Message(you, stranger, myFile.toJSONString());
 
                         RunClient.socketHandler.sendFile(message);
-                        addSelfFileMessage(message);
+                        addFileMessage(message, myFile.getName());
                     } catch (FileNotFoundException ex) {
-                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(ChatRoomGUI.this, "Không tìm thấy file đã chọn, vui lòng chọn lại!");
                     } catch (IOException ioException) {
                         ioException.printStackTrace();
                     }
                 }
+                sendFileButton.setEnabled(false);
             }
         });
     }

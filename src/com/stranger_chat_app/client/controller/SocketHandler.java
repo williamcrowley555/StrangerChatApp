@@ -37,7 +37,6 @@ public class SocketHandler {
 
     PublicKey publicKey;
     SecretKey secretKey;
-    static ArrayList<MyFile> myFiles = new ArrayList<>();
 
     public boolean connect(String hostname, int port) {
         try {
@@ -328,10 +327,18 @@ public class SocketHandler {
             if (ChatRoomGUI.path != null)
             {
                 try {
-                    FileOutputStream output = new FileOutputStream(
-                            new File(ChatRoomGUI.path));
-                    output.write(myFile.getData());
-                    output.close();
+                    String fileName = ChatRoomGUI.path.substring(ChatRoomGUI.path.lastIndexOf("\\"));
+                    String fileExtension = fileName.substring(fileName.lastIndexOf("."));
+                    String originalFileExtension = myFile.getName().substring(myFile.getName().lastIndexOf("."));
+
+                    if (fileExtension.equals(originalFileExtension)){
+                        FileOutputStream output = new FileOutputStream(
+                                new File(ChatRoomGUI.path));
+                        output.write(myFile.getData());
+                        output.close();
+                    }
+                    else
+                        JOptionPane.showMessageDialog(null,"Định dạng file lưu khác file gốc, lưu file thất bại!");
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } catch (IOException ioException) {

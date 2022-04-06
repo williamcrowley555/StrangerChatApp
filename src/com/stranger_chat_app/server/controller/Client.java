@@ -325,6 +325,7 @@ public class Client implements Runnable {
 
     private void onDownload(String received) {
         Message message = Message.parse(received);
+        System.out.println(message.getContent());
         File filesFolder = new File(System.getProperty("user.dir")
                 + "\\src\\com\\stranger_chat_app\\server\\client-files");
         File clientFolder = new File(filesFolder.getAbsolutePath() + "\\" + message.getSender());
@@ -363,6 +364,12 @@ public class Client implements Runnable {
                 message.setContent(myFile.toJSONString());
 
                 stranger.sendData(DataType.DOWNLOAD, message.toJSONString());
+
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
