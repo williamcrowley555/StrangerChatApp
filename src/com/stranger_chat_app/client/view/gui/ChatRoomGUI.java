@@ -44,6 +44,7 @@ public class ChatRoomGUI extends JFrame {
     private JButton chooseFileButton;
     private JButton sendFileButton;
     private JLabel lblCall;
+    private JPanel pnlMessageArea;
     private JLabel lblStranger;
     private JLabel lblStatus;
 
@@ -64,7 +65,7 @@ public class ChatRoomGUI extends JFrame {
     private boolean eventNotAdded = true;
 
     private boolean isCalling = false;
-
+    MessageHandler messageHandler;
     public ChatRoomGUI() {
         super();
         setTitle("Phòng chat - Bạn: " + RunClient.socketHandler.getNickname());
@@ -73,6 +74,7 @@ public class ChatRoomGUI extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         initComponents();
+        messageHandler = new MessageHandler(pnlMessageArea);
     }
     
     public void addFileMessage(Message message, String... fileName) {
@@ -146,17 +148,18 @@ public class ChatRoomGUI extends JFrame {
     }
     public void addChatMessage(Message message) {
         MessageStore.add(message);
-        try {
-            kit.insertHTML(doc, doc.getLength(),
-                    createHTMLMsg("recipient", message),
-                    0, 0, null);
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        messageArea.setCaretPosition(messageArea.getDocument().getLength());
+        messageHandler.addTextMessage(message, "recipient");
+//        try {
+//            kit.insertHTML(doc, doc.getLength(),
+//                    createHTMLMsg("recipient", message),
+//                    0, 0, null);
+//        } catch (BadLocationException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        messageArea.setCaretPosition(messageArea.getDocument().getLength());
     }
 
     private void sendMessage(String content) {
@@ -165,16 +168,17 @@ public class ChatRoomGUI extends JFrame {
 
             RunClient.socketHandler.sendChatMessage(message);
             txtMessage.setText("");
-            try {
-                kit.insertHTML(doc, doc.getLength(),
-                        createHTMLMsg("sender", message),
-                        0, 0, null);
-            } catch (BadLocationException | IOException badLocationException) {
-                badLocationException.printStackTrace();
-            }
+            messageHandler.addTextMessage(message, "sender");
+//            try {
+//                kit.insertHTML(doc, doc.getLength(),
+//                        createHTMLMsg("sender", message),
+//                        0, 0, null);
+//            } catch (BadLocationException | IOException badLocationException) {
+//                badLocationException.printStackTrace();
+//            }
 
             MessageStore.add(message);
-            messageArea.setCaretPosition(messageArea.getDocument().getLength());
+           // messageArea.setCaretPosition(messageArea.getDocument().getLength());
         }
     }
 
@@ -228,6 +232,7 @@ public class ChatRoomGUI extends JFrame {
     }
 
     private void initComponents() {
+
         btnSend.setPreferredSize(new Dimension(50, 40));
         sendFileButton.setEnabled(false);
         txtMessage.setMargin(new Insets(3, 3, 3, 3));
@@ -272,23 +277,23 @@ public class ChatRoomGUI extends JFrame {
                 "}");
 
         kit.setStyleSheet(styleSheet);
-        doc = (HTMLDocument) messageArea.getDocument();
-
-        messageArea.setEditorKit(kit);
-        messageArea.setDocument(doc);
-
-        messageArea.addHyperlinkListener(e -> {
-            if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
-                if (e.getURL() != null) {
-                    Desktop desktop = Desktop.getDesktop();
-                    try {
-                        desktop.browse(e.getURL().toURI());
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            }
-        });
+//        doc = (HTMLDocument) messageArea.getDocument();
+//
+//        messageArea.setEditorKit(kit);
+//        messageArea.setDocument(doc);
+//
+//        messageArea.addHyperlinkListener(e -> {
+//            if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+//                if (e.getURL() != null) {
+//                    Desktop desktop = Desktop.getDesktop();
+//                    try {
+//                        desktop.browse(e.getURL().toURI());
+//                    } catch (Exception ex) {
+//                        ex.printStackTrace();
+//                    }
+//                }
+//            }
+//        });
 
         // Generate new line of txtMessage on CTRL + ENTER
         InputMap input = txtMessage.getInputMap();
