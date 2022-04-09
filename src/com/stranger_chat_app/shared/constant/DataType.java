@@ -28,6 +28,8 @@ public enum DataType {
     ACCEPT_CALL,
     END_CALL,
     VOICE,
+    VIDEO_STREAM,
+    STOP_VIDEO_STREAM,
     LOGOUT,
     EXIT,
 }

@@ -115,6 +115,14 @@ public class Client implements Runnable {
                             onReceiveVoice(receivedContent);
                             break;
 
+                        case VIDEO_STREAM:
+                            onReceiveVideoStream(receivedContent);
+                            break;
+
+                        case STOP_VIDEO_STREAM:
+                            onReceiveStopVideoStream(receivedContent);
+                            break;
+
                         case LOGOUT:
                             System.out.println(nickname + " logged out");
                             onReceiveLogout(receivedContent);
@@ -471,6 +479,24 @@ public class Client implements Runnable {
         if (stranger != null) {
             // call stranger
             stranger.sendData(DataType.VOICE, received);
+        }
+    }
+
+    private void onReceiveVideoStream(String received) {
+        Client stranger = RunServer.clientManager.find(this.stranger.getNickname());
+
+        if (stranger != null) {
+            // call stranger
+            stranger.sendData(DataType.VIDEO_STREAM, received);
+        }
+    }
+
+    private void onReceiveStopVideoStream(String received) {
+        Client stranger = RunServer.clientManager.find(this.stranger.getNickname());
+
+        if (stranger != null) {
+            // call stranger
+            stranger.sendData(DataType.STOP_VIDEO_STREAM, received);
         }
     }
 

@@ -63,7 +63,7 @@ public class ChatRoomGUI extends JFrame {
     public static String path;
     private boolean eventNotAdded = true;
 
-    private boolean isCalling = false;
+    private volatile boolean isCalling = false;
 
     public ChatRoomGUI() {
         super();

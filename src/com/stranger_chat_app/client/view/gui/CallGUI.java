@@ -1,6 +1,7 @@
 package com.stranger_chat_app.client.view.gui;
 
 import com.stranger_chat_app.client.RunClient;
+import com.stranger_chat_app.client.thread.VideoRecorder;
 import com.stranger_chat_app.client.thread.VoiceRecorder;
 import com.stranger_chat_app.client.util.AudioUtils;
 import com.stranger_chat_app.client.view.enums.CallState;
@@ -8,6 +9,7 @@ import com.stranger_chat_app.client.view.enums.CallState;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -26,11 +28,15 @@ public class CallGUI extends JFrame{
     private JPanel pnlInfo;
     private JLabel lblNickname;
     private JLabel lblUserAvatar;
+    private JPanel pnlVideo;
+    private JLabel lblStrangerStream;
+    private CardLayout cardLayout;
 
     private String audioDir = System.getProperty("user.dir") + "\\src\\com\\stranger_chat_app\\client\\asset\\audio\\";
     private AudioUtils audio;
 
     private VoiceRecorder microphone;
+    private VideoRecorder webcam;
 
     private String stranger;
 
@@ -38,7 +44,8 @@ public class CallGUI extends JFrame{
         super();
         setTitle("Video call");
         setContentPane(mainPanel);
-        setSize(600, 600);
+        setSize(800, 600);
+        setResizable(false);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         initComponents();
@@ -87,6 +94,7 @@ public class CallGUI extends JFrame{
         btnAcceptCall.setEnabled(true);
         btnEndCall.setVisible(true);
         btnEndCall.setEnabled(true);
+        cardLayout.show(pnlScreen, "cardUserInfo");
     }
 
     private void playAudio(String file, boolean looped) {
@@ -114,12 +122,40 @@ public class CallGUI extends JFrame{
         }
     }
 
+    public void stopWebcam() {
+        if (webcam != null && webcam.isRunning()) {
+            webcam.terminate();
+        }
+    }
+
+    public void showStrangerWebcam(ImageIcon imageIcon) {
+        cardLayout.show(pnlScreen, "cardVideo");
+        setLabelIcon(lblStrangerStream, imageIcon);
+    }
+
+    private void setLabelIcon(JLabel label, ImageIcon icon) {
+        if (icon == null) {
+            label.setIcon(null);
+            // **IMPORTANT** to call revalidate() to cause JLabel to resize and be repainted.
+            label.revalidate();
+        } else {
+            Image image = icon.getImage();
+            Image imageScale = image.getScaledInstance(label.getWidth(),
+                    label.getHeight(),
+                    Image.SCALE_SMOOTH);
+            label.setIcon(new ImageIcon(imageScale));
+            label.revalidate();
+        }
+    }
+
     public void setStranger(String stranger) {
         this.stranger = stranger;
         lblNickname.setText(stranger);
     }
 
     private void initComponents() {
+        cardLayout = (CardLayout) pnlScreen.getLayout();
+
         btnAcceptCall.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -130,6 +166,8 @@ public class CallGUI extends JFrame{
         btnEndCall.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                stopMicrophone();
+                stopWebcam();
                 RunClient.socketHandler.endCall(stranger);
             }
         });
@@ -148,7 +186,20 @@ public class CallGUI extends JFrame{
                     microphone = new VoiceRecorder();
                     microphone.start();
                 } else {
-                    microphone.terminate();
+                    stopMicrophone();
+                }
+            }
+        });
+
+        cameraCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    cardLayout.show(pnlScreen, "cardVideo");
+                    webcam = new VideoRecorder();
+                    webcam.start();
+                } else {
+                    stopWebcam();
                 }
             }
         });

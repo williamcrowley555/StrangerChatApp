@@ -6,8 +6,11 @@ import javax.sound.sampled.*;
 import java.util.Base64;
 
 public class VoiceRecorder extends Thread {
-    private boolean isCalling;
+    private boolean isCalling = false;
     private TargetDataLine microphone = null;
+
+    public VoiceRecorder() {
+    }
 
     @Override
     public void run() {
@@ -23,8 +26,7 @@ public class VoiceRecorder extends Thread {
                 String data = Base64.getEncoder().encodeToString(buffer);
                 RunClient.socketHandler.sendVoice(data);
             }
-        }
-        catch(LineUnavailableException e) {
+        } catch(LineUnavailableException e) {
             e.printStackTrace();
         }
 

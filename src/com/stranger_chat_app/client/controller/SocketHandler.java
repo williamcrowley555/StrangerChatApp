@@ -1,6 +1,7 @@
 package com.stranger_chat_app.client.controller;
 
 import com.stranger_chat_app.client.RunClient;
+import com.stranger_chat_app.client.util.ImageIconUtil;
 import com.stranger_chat_app.client.view.enums.CallState;
 import com.stranger_chat_app.client.view.enums.GUIName;
 import com.stranger_chat_app.client.view.enums.MainMenuState;
@@ -158,6 +159,14 @@ public class SocketHandler {
 
                         case VOICE:
                             onReceiveVoice(receivedContent);
+                            break;
+
+                        case VIDEO_STREAM:
+                            onReceiveVideoStream(receivedContent);
+                            break;
+
+                        case STOP_VIDEO_STREAM:
+                            onReceiveStopVideoStream(receivedContent);
                             break;
 
                         case LOGOUT:
@@ -443,6 +452,16 @@ public class SocketHandler {
         speaker.write(buffer, 0, buffer.length);
     }
 
+    private void onReceiveVideoStream(String received) {
+        byte[] imageContent = Base64.getDecoder().decode(received);
+        ImageIcon imageIcon = ImageIconUtil.parse(imageContent);
+        RunClient.callGUI.showStrangerWebcam(imageIcon);
+    }
+
+    private void onReceiveStopVideoStream(String received) {
+        RunClient.callGUI.showStrangerWebcam(null);
+    }
+
     private void onReceiveLogout(String received) {
         // xóa nickname
         this.nickname = null;
@@ -455,10 +474,6 @@ public class SocketHandler {
     private void onReceiveExit(String received) {
         // đóng tất cả GUIs
         RunClient.closeAllGUIs();
-    }
-
-    private void initSpeaker() {
-
     }
 
     public void login(String nickname) {
@@ -511,6 +526,14 @@ public class SocketHandler {
 
     public void sendVoice(String data) {
         sendData(DataType.VOICE, data);
+    }
+
+    public void sendVideoStream(String data) {
+        sendData(DataType.VIDEO_STREAM, data);
+    }
+
+    public void stopVideoStream() {
+        sendData(DataType.STOP_VIDEO_STREAM, null);
     }
 
     public void logout() {
