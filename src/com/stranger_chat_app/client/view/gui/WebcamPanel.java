@@ -8,7 +8,7 @@ public class WebcamPanel extends JPanel {
     private JLabel selfStreamContainer = new JLabel();
 
     private int strangerStreamWidth;
-    private  int strangerStreamHeight;
+    private int strangerStreamHeight;
     private int selfStreamWidth;
     private int selfStreamHeight;
 
@@ -31,6 +31,8 @@ public class WebcamPanel extends JPanel {
         strangerStreamHeight = height;
 
         strangerStreamContainer.setBounds( 0, 0, strangerStreamWidth, strangerStreamHeight);
+        strangerStreamContainer.setBackground(Color.BLACK);
+        strangerStreamContainer.setOpaque(true);
 
         int selfStreamX = strangerStreamContainer.getX() +
                 (strangerStreamContainer.getWidth() - strangerStreamContainer.getWidth() / defaultStreamRatio);
@@ -40,6 +42,8 @@ public class WebcamPanel extends JPanel {
         selfStreamHeight = strangerStreamContainer.getHeight()/ defaultStreamRatio;
 
         selfStreamContainer.setBounds(selfStreamX, selfStreamY, selfStreamWidth, selfStreamHeight);
+        selfStreamContainer.setBackground(Color.RED);
+        selfStreamContainer.setOpaque(true);
 
        repaint();
        revalidate();

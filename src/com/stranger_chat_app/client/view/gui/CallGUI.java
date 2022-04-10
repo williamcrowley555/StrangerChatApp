@@ -151,21 +151,6 @@ public class CallGUI extends JFrame{
         }
     }
 
-    private void setLabelIcon(JLabel label, ImageIcon icon) {
-        if (icon == null) {
-            label.setIcon(null);
-            // **IMPORTANT** to call revalidate() to cause JLabel to resize and be repainted.
-            label.revalidate();
-        } else {
-            Image image = icon.getImage();
-            Image imageScale = image.getScaledInstance(label.getWidth(),
-                    label.getHeight(),
-                    Image.SCALE_SMOOTH);
-            label.setIcon(new ImageIcon(imageScale));
-            label.revalidate();
-        }
-    }
-
     public void setStranger(String stranger) {
         this.stranger = stranger;
         lblNickname.setText(stranger);
