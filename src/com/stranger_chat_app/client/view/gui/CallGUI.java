@@ -31,7 +31,7 @@ public class CallGUI extends JFrame{
     private JPanel pnlVideo;
     private JLabel lblStrangerStream;
     private CardLayout cardLayout;
-
+    private WebcamPanel webcamPanel;
     private String audioDir = System.getProperty("user.dir") + "\\src\\com\\stranger_chat_app\\client\\asset\\audio\\";
     private AudioUtils audio;
 
@@ -95,6 +95,7 @@ public class CallGUI extends JFrame{
         btnEndCall.setVisible(true);
         btnEndCall.setEnabled(true);
         cardLayout.show(pnlScreen, "cardUserInfo");
+        webcamPanel.createGUI(pnlScreen.getWidth(), pnlScreen.getHeight());
     }
 
     private void playAudio(String file, boolean looped) {
@@ -129,8 +130,25 @@ public class CallGUI extends JFrame{
     }
 
     public void showStrangerWebcam(ImageIcon imageIcon) {
-        cardLayout.show(pnlScreen, "cardVideo");
-        setLabelIcon(lblStrangerStream, imageIcon);
+        webcamPanel.setStrangerStream(imageIcon);
+        cardLayout.show(pnlScreen, "webcam");
+
+        if (imageIcon == null) {
+            if (webcamPanel.getSelfStream() == null) {
+                cardLayout.show(pnlScreen, "cardUserInfo");
+            }
+        }
+    }
+
+    public void showSelfWebcam(ImageIcon imageIcon) {
+        webcamPanel.setSelfStream(imageIcon);
+        cardLayout.show(pnlScreen, "webcam");
+
+        if (imageIcon == null) {
+            if (webcamPanel.getStrangerStream() == null) {
+                cardLayout.show(pnlScreen, "cardUserInfo");
+            }
+        }
     }
 
     private void setLabelIcon(JLabel label, ImageIcon icon) {
@@ -155,6 +173,8 @@ public class CallGUI extends JFrame{
 
     private void initComponents() {
         cardLayout = (CardLayout) pnlScreen.getLayout();
+        webcamPanel = new WebcamPanel();
+        pnlScreen.add(webcamPanel, "webcam");
 
         btnAcceptCall.addMouseListener(new MouseAdapter() {
             @Override
@@ -195,9 +215,9 @@ public class CallGUI extends JFrame{
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    cardLayout.show(pnlScreen, "cardVideo");
-                    webcam = new VideoRecorder();
-                    webcam.start();
+                   cardLayout.show(pnlScreen, "cardVideo");
+                   webcam = new VideoRecorder();
+                   webcam.start();
                 } else {
                     stopWebcam();
                 }

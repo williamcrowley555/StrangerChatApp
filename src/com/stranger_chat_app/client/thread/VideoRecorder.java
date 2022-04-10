@@ -39,9 +39,11 @@ public class VideoRecorder extends Thread {
             byte[] imageContent = ImageIconUtil.getBytes(imageIcon);
             String data = Base64.getEncoder().encodeToString(imageContent);
 
+            RunClient.callGUI.showSelfWebcam(imageIcon);
             RunClient.socketHandler.sendVideoStream(data);
         }
 
+        RunClient.callGUI.showSelfWebcam(null);
         RunClient.socketHandler.stopVideoStream();
         webcam.close();
     }
