@@ -127,9 +127,6 @@ public class MessageHandler {
         if (containURL(message.getContent())){
             //Hyperlink message
             String [] parts = message.getContent().split("\\s+");
-            System.out.println(parts);
-            String content = "";
-
             for( String item : parts ) {
                 try {
                     URL url = new URL(item);
@@ -163,9 +160,7 @@ public class MessageHandler {
             try {
                 URL url = new URL(item);
                 return true;
-            } catch (MalformedURLException e) {
-               continue;
-            }
+            } catch (MalformedURLException ignored) {}
         }
         return false;
     }
@@ -175,7 +170,6 @@ public class MessageHandler {
         final JLabel l = new JLabel(s);
         l.addMouseListener(new MouseAdapter()
         {
-
             @Override
             public void mouseExited(MouseEvent arg0)
             {
