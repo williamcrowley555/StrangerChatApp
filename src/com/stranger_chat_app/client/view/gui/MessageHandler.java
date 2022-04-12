@@ -65,14 +65,14 @@ public class MessageHandler {
             int contentWidth = messageArea.getWidth() * 90/100;
             int avatarWidthOffset;
 
+            //Add spacer between messages
             if (vertical.getComponentCount() != 0)
             {
                 JPanel spacerBubble = createBubble(Color.white, userType, 5 , 10);
                 vertical.add(spacerBubble);
             }
 
-
-
+            //Calculate avatar width base on nickname
             if(!userType.equals("sender"))
             {
                 if (message.getSender().length() < 6)
@@ -84,40 +84,18 @@ public class MessageHandler {
             } else
                 avatarWidthOffset = contentWidth * 0/100;
 
+
             int textBubbleWidth = contentWidth * 90/100 - avatarWidthOffset;
             int avatarWidth = contentWidth - textBubbleWidth;
 
-            JPanel textBubble = createBubble(
-                    Color.white,userType,
-                    5,15);
+            JPanel textBubble = createBubble(Color.white,userType, 5,15);
 
-            //Hyperlink message
-            String [] parts = message.getContent().split("\\s+");
-            System.out.println(parts);
-            String content = "";
+            //Add content to textBubble
+            addBubbleTextContent(textBubble, message, textBubbleWidth);
 
-            for( String item : parts ) {
-                try {
-                    URL url = new URL(item);
-
-                    JLabel label = new JLabel(url.toString());
-                    label = makeHyperLink(url.toString(), url.toString(), 0, label.getText().length());
-                    label.setForeground(Color.BLUE);
-                    textBubble.add(label);
-                } catch (MalformedURLException e) {
-                    // If there was an normal string
-                    String labelText = String.format(item);
-                    JLabel text = new JLabel(labelText);
-                    text.setForeground(Color.BLACK);
-                    textBubble.add(text);
-                }
-            }
-
+            //Create chatBubble contain textBubble and pnlAvatar
             JPanel chatBubble = new JPanel();
             chatBubble.setLayout(new BorderLayout());
-
-
-            //textBubble.add(text, userType.equals("sender") ? BorderLayout.LINE_END : BorderLayout.LINE_START);
 
             ImageIcon imageIcon = new ImageIcon(new ImageIcon(getClass().getResource(defaultAvatarLocation))
                     .getImage().getScaledInstance(32, 32, Image.SCALE_DEFAULT));
@@ -145,24 +123,51 @@ public class MessageHandler {
         return true;
     }
 
-    //Auto hyperlink urls if there are URLs in message
-    private String handleHyperlinkUrls(String message){
+    public void addBubbleTextContent(JPanel textBubble, Message message, int textBubbleWidth){
+        if (containURL(message.getContent())){
+            //Hyperlink message
+            String [] parts = message.getContent().split("\\s+");
+            System.out.println(parts);
+            String content = "";
+
+            for( String item : parts ) {
+                try {
+                    URL url = new URL(item);
+
+                    JLabel label = new JLabel(url.toString());
+                    label = makeHyperLink(url.toString(), url.toString(), 0, label.getText().length());
+                    label.setForeground(Color.BLUE);
+                    textBubble.add(label);
+                } catch (MalformedURLException e) {
+                    // If there was an normal string
+                    String labelText = String.format(item);
+                    JLabel text = new JLabel(labelText);
+                    text.setForeground(Color.BLACK);
+                    textBubble.add(text);
+                }
+            }
+        } else {
+            //Normal text message
+            String labelText;
+            labelText = String.format("<html><div WIDTH=%d>%s</div></html>", textBubbleWidth, message.getContent());
+            JLabel text = new JLabel(labelText);
+            text.setForeground(Color.BLACK);
+            textBubble.add(text);
+        }
+    }
+
+    boolean containURL(String message){
         String [] parts = message.split("\\s+");
         String content = "";
-
-        // Attempt to convert each item into an URL.
         for( String item : parts ) {
             try {
                 URL url = new URL(item);
-                // If there is possible url then replace with anchor...
-                content += "<a style='color: #0000EE' href=\"" + url + "\">"+ url + "</a> ";
+                return true;
             } catch (MalformedURLException e) {
-                // If there was an normal string
-                content += item + " ";
+               continue;
             }
         }
-
-        return content;
+        return false;
     }
 
     public static JLabel makeHyperLink(final String s, final String link, int x, int y)
@@ -193,14 +198,14 @@ public class MessageHandler {
                     URI uri = new URI(link);
                     if (Desktop.isDesktopSupported())
                         Desktop.getDesktop().browse(uri);
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         });
 
         l.setBounds(x, y, s.length()*5, 20);
-        l.setToolTipText(String.format("go to %s", link));
+        l.setToolTipText(String.format("Truy cập %s", link));
         return l;
     }
 }
