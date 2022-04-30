@@ -3,13 +3,14 @@ package com.stranger_chat_app.client.thread;
 import javax.sound.sampled.*;
 
 public class AudioRecorder extends Thread {
-    private boolean isRecord = false;
+    private boolean isRecord;
     private TargetDataLine microphone;
     private AudioFormat audioFormat;
     private DataLine.Info info;
     private int recordTime;
 
     // Hàm chính, khi chạy sẽ tiến hành thu âm cho đến khi dừng lại.
+
     @Override
     public void run() {
         createMicrophone();
@@ -47,10 +48,10 @@ public class AudioRecorder extends Thread {
         isRecord = true;
 
         microphone.start();
+        System.out.println("run startRecord");
         while (isRecord) {
             recordTime++;
             microphone.read(buffer, 0, buffer.length);
-            System.out.println("Đang chạy...");
         }
 
         endRecord();
@@ -60,12 +61,14 @@ public class AudioRecorder extends Thread {
     public void endRecord() {
         microphone.close();
         microphone.drain();
+        System.out.println("close mic");
 
         //TODO Thêm hàm gửi từ người gửi sang người nhận.
     }
 
     // Hàm dừng thu âm
     public void terminate() {
+        System.out.println("run terminate");
         this.isRecord = false;
     }
 }
