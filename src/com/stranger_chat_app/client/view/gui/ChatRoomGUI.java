@@ -2,6 +2,7 @@ package com.stranger_chat_app.client.view.gui;
 
 import com.stranger_chat_app.client.RunClient;
 import com.stranger_chat_app.client.model.MessageStore;
+import com.stranger_chat_app.client.thread.AudioRecorder;
 import com.stranger_chat_app.server.controller.MyFile;
 import com.stranger_chat_app.shared.model.Message;
 
@@ -45,6 +46,7 @@ public class ChatRoomGUI extends JFrame {
     private JButton sendFileButton;
     private JLabel lblCall;
     private JPanel pnlMessageArea;
+    private JLabel lblAudio;
     private JLabel lblStranger;
     private JLabel lblStatus;
 
@@ -75,6 +77,7 @@ public class ChatRoomGUI extends JFrame {
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         initComponents();
         messageHandler = new MessageHandler(pnlMessageArea);
+
     }
     
     public void addFileMessage(Message message, String... fileName) {
@@ -466,6 +469,18 @@ public class ChatRoomGUI extends JFrame {
                 }
             }
         });
+
+        lblAudio.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                recordAudio();
+            }
+        });
+    }
+
+    public void recordAudio() {
+        AudioRecorder audioRecorder = new AudioRecorder();
+        audioRecorder.run();
     }
 
     public void setClients(String you, String stranger) {

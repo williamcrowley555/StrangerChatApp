@@ -126,6 +126,15 @@
                   </component>
                 </children>
               </scrollpane>
+              <component id="6844b" class="javax.swing.JLabel" binding="lblAudio">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <icon value="com/stranger_chat_app/client/asset/icons8-microphone-24.png"/>
+                  <text value=""/>
+                </properties>
+              </component>
             </children>
           </grid>
           <grid id="3dc26" binding="topPanel" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">

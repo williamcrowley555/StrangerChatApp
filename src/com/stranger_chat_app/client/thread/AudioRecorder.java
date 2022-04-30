@@ -32,9 +32,9 @@ public class AudioRecorder extends Thread {
     public void createMicrophone() {
         try {
             audioFormat = getAudioFormat();
-            info = new DataLine.Info(DataLine.class, audioFormat);
+            info = new DataLine.Info(TargetDataLine.class, audioFormat);
             microphone = (TargetDataLine) AudioSystem.getLine(info);
-            microphone.open();
+            microphone.open(audioFormat);
         } catch (LineUnavailableException e) {
             e.printStackTrace();
         }
@@ -50,7 +50,18 @@ public class AudioRecorder extends Thread {
         while (isRecord) {
             recordTime++;
             microphone.read(buffer, 0, buffer.length);
+            System.out.println("Đang chạy...");
         }
+
+        endRecord();
+    }
+
+    // Hàm đóng microphone và gửi bản ghi âm
+    public void endRecord() {
+        microphone.close();
+        microphone.drain();
+
+        //TODO Thêm hàm gửi từ người gửi sang người nhận.
     }
 
     // Hàm dừng thu âm
