@@ -56,6 +56,8 @@ public class ChatRoomGUI extends JFrame {
 
     private String you;
     private String stranger;
+    private String urlBlockMicrophone = "/com/stranger_chat_app/client/asset/icons8-block-microphone-24.png";
+    private String urlMicrophone = "/com/stranger_chat_app/client/asset/icons8-microphone-24.png";
 
     private final File[] fileToSend = new File[1];
     private final float fileSizeLimit = 250F;
@@ -69,6 +71,7 @@ public class ChatRoomGUI extends JFrame {
     private boolean isCalling = false;
     private boolean isRecord = false;
     MessageHandler messageHandler;
+    AudioRecorder audioRecorder;
 
     public ChatRoomGUI() {
         super();
@@ -482,15 +485,9 @@ public class ChatRoomGUI extends JFrame {
 
     // Hàm thực hiện thu âm hoặc dừng thu âm dựa vào biến isRecord
     public void recordAudio() {
-        String urlBlockMicrophone = "/com/stranger_chat_app/client/asset/icons8-block-microphone-24.png";
-        String urlMicrophone = "/com/stranger_chat_app/client/asset/icons8-microphone-24.png";
-        String abc = "/com/stranger_chat_app/client/asset/icons8-anonymous-24.png";
-        AudioRecorder audioRecorder = new AudioRecorder();
-
-
         if (!isRecord) {
-//            setIsRecordAndLblAudioIcon(urlBlockMicrophone);
-            setIsRecordAndLblAudioIcon(urlMicrophone);
+            audioRecorder = new AudioRecorder();
+            setIsRecordAndLblAudioIcon(urlBlockMicrophone);
             audioRecorder.start();
         } else {
             setIsRecordAndLblAudioIcon(urlMicrophone);
@@ -501,10 +498,11 @@ public class ChatRoomGUI extends JFrame {
 
     // Hàm truyền vào đường dẫn của icon cần sử dụng, trả về biến imageIcon
     public ImageIcon getImageIcon(String url) {
-        ImageIcon imageIcon = new ImageIcon (new ImageIcon(getClass().getResource(url)).getImage());
+        ImageIcon imageIcon = new ImageIcon(new ImageIcon(getClass().getResource(url)).getImage());
         return imageIcon;
     }
 
+    // Hàm thay đổi trạng thái của biến isRecord và icon Micro tuỳ trường hợp.
     public void setIsRecordAndLblAudioIcon(String url) {
         this.isRecord = (isRecord) ? false : true;
         ImageIcon imageIcon = getImageIcon(url);

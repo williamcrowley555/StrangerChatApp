@@ -48,7 +48,6 @@ public class AudioRecorder extends Thread {
         isRecord = true;
 
         microphone.start();
-        System.out.println("run startRecord");
         while (isRecord) {
             recordTime++;
             microphone.read(buffer, 0, buffer.length);
@@ -61,14 +60,12 @@ public class AudioRecorder extends Thread {
     public void endRecord() {
         microphone.close();
         microphone.drain();
-        System.out.println("close mic");
 
         //TODO Thêm hàm gửi từ người gửi sang người nhận.
     }
 
     // Hàm dừng thu âm
     public void terminate() {
-        System.out.println("run terminate");
         this.isRecord = false;
     }
 }
