@@ -1,5 +1,7 @@
 package com.stranger_chat_app.client.thread;
 
+import com.stranger_chat_app.shared.model.Audio;
+
 import javax.sound.sampled.*;
 
 public class AudioRecorder extends Thread {
@@ -8,6 +10,9 @@ public class AudioRecorder extends Thread {
     private AudioFormat audioFormat;
     private DataLine.Info info;
     private int recordTime;
+    private byte[] buffer;
+
+    Audio audio;
 
     // Hàm chính, khi chạy sẽ tiến hành thu âm cho đến khi dừng lại.
 
@@ -43,7 +48,7 @@ public class AudioRecorder extends Thread {
 
     // Hàm thu âm
     public void startRecord() {
-        byte[] buffer = new byte[1024];
+        buffer = new byte[1024];
         recordTime = 0;
         isRecord = true;
 
@@ -62,6 +67,11 @@ public class AudioRecorder extends Thread {
         microphone.drain();
 
         //TODO Thêm hàm gửi từ người gửi sang người nhận.
+        audio = new Audio();
+        audio.setBuffer(buffer);
+        audio.setRecordTime(recordTime);
+
+
     }
 
     // Hàm dừng thu âm
