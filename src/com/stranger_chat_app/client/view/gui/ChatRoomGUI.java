@@ -41,10 +41,10 @@ public class ChatRoomGUI extends JFrame {
     private JPanel pnlChat;
     private JLabel lblEmoji;
     private JPanel sendButtonPanel;
-    private JButton chooseFileButton;
     private JButton sendFileButton;
     private JLabel lblCall;
     private JPanel pnlMessageArea;
+    private JLabel lblAttachment;
     private JLabel lblStranger;
     private JLabel lblStatus;
 
@@ -79,87 +79,20 @@ public class ChatRoomGUI extends JFrame {
     
     public void addFileMessage(Message message, String... fileName) {
         MessageStore.add(message);
-        String htmlContent = "";
         String userType = "";
 
         if (fileName.length != 0) {
             userType = "sender";
-            htmlContent = "<a style='color: #0000EE' href=\"" + fileName[0] + "\">"+ fileName[0] + "</a> ";
+            messageHandler.addFileMessage(message, userType, fileName[0]);
         } else {
             userType = "recipient";
-            htmlContent = "<a style='color: #0000EE' href=\"" + message.getContent() + "\">"+ message.getContent() + "</a> ";
-        }
-
-        try {
-            Message htmlMessage = (Message) message.clone();
-            htmlMessage.setContent(htmlContent);
-
-            kit.insertHTML(doc, doc.getLength(),
-                    createHTMLMsg(userType, htmlMessage),
-                    0, 0, null);
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-        }
-        /*FileName null: file receive from stranger.
-         *         not null: self file download.    */
-        addEventHyperlinkMessage(message, fileName.length != 0 ? true : false);
-        messageArea.setCaretPosition(messageArea.getDocument().getLength());
-    }
-
-    public void addEventHyperlinkMessage(Message message, boolean selfDownload){
-        if (eventNotAdded){
-            messageArea.addHyperlinkListener(e -> {
-                if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
-                    int resutl = JOptionPane.showConfirmDialog(ChatRoomGUI.this, "Bạn có muỗn tải file về không ?");
-                    if (resutl == 0){
-                        JFileChooser fileChooser = new JFileChooser();
-                        fileChooser.setDialogTitle("Chọn nơi để lưu file.");
-                        fileChooser.setSelectedFile(new File(e.getDescription()));
-
-                        int userSelection = fileChooser.showSaveDialog(ChatRoomGUI.this);
-                        if (userSelection == JFileChooser.APPROVE_OPTION) {
-                            File f = fileChooser.getSelectedFile();
-//                        if (f.exists()) {
-//                            int click = JOptionPane.showConfirmDialog(ChatRoomGUI.this, "Tên tệp này đã tồn tại, bạn có muốn thay thế không ?", "Lưu tệp", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-//                            if (click != JOptionPane.YES_OPTION) {
-//                                return;
-//                            }
-//                        }
-                            path = f.getAbsolutePath();
-                            message.setContent(e.getDescription());
-                            if(selfDownload)
-                                message.setRecipient(message.getSender());
-                            System.out.println(message.toJSONString());
-                            RunClient.socketHandler.download(message);
-                        }
-                    }
-                    else if (resutl == 1)
-                        System.out.println("NO");
-                    else
-                        System.out.println("CANCEL");
-                }
-            });
-            eventNotAdded = false;
+            messageHandler.addFileMessage(message, userType, null);
         }
     }
+
     public void addChatMessage(Message message) {
         MessageStore.add(message);
         messageHandler.addTextMessage(message, "recipient");
-//        try {
-//            kit.insertHTML(doc, doc.getLength(),
-//                    createHTMLMsg("recipient", message),
-//                    0, 0, null);
-//        } catch (BadLocationException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        messageArea.setCaretPosition(messageArea.getDocument().getLength());
     }
 
     private void sendMessage(String content) {
@@ -169,16 +102,8 @@ public class ChatRoomGUI extends JFrame {
             RunClient.socketHandler.sendChatMessage(message);
             txtMessage.setText("");
             messageHandler.addTextMessage(message, "sender");
-//            try {
-//                kit.insertHTML(doc, doc.getLength(),
-//                        createHTMLMsg("sender", message),
-//                        0, 0, null);
-//            } catch (BadLocationException | IOException badLocationException) {
-//                badLocationException.printStackTrace();
-//            }
 
             MessageStore.add(message);
-           // messageArea.setCaretPosition(messageArea.getDocument().getLength());
         }
     }
 
@@ -198,43 +123,11 @@ public class ChatRoomGUI extends JFrame {
                 content += item + " ";
             }
         }
-
         return content;
     }
 
-    public String createHTMLMsg(String userType, Message message) {
-        String bubble = null;
-
-        switch (userType) {
-            case "sender":
-                bubble = "<div class=\"my-msg\">\n" +
-                        "   <div class=\"msg-info-name\">Bạn</div>\n" +
-                        "  <div class=\"msg-text\">\n" +
-                        handleHyperlinkUrls(message.getContent()) +
-                        "  </div>\n" +
-                        "</div>";
-                break;
-
-            case "recipient":
-                bubble = "<div class=\"stranger-msg\">\n" +
-                        "   <div class=\"msg-info-name\">" + message.getSender() + "</div>\n" +
-                        "  <div class=\"msg-text\">\n" +
-                        handleHyperlinkUrls(message.getContent()) +
-                        "  </div>\n" +
-                        "</div>";
-                break;
-
-            default:
-                break;
-        }
-
-        return bubble + "<br/>";
-    }
 
     private void initComponents() {
-
-        btnSend.setPreferredSize(new Dimension(50, 40));
-        sendFileButton.setEnabled(false);
         txtMessage.setMargin(new Insets(3, 3, 3, 3));
         inputPanel.setBorder(BorderFactory.createEmptyBorder(2, 0, 5, 3));
 
@@ -277,23 +170,6 @@ public class ChatRoomGUI extends JFrame {
                 "}");
 
         kit.setStyleSheet(styleSheet);
-//        doc = (HTMLDocument) messageArea.getDocument();
-//
-//        messageArea.setEditorKit(kit);
-//        messageArea.setDocument(doc);
-//
-//        messageArea.addHyperlinkListener(e -> {
-//            if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
-//                if (e.getURL() != null) {
-//                    Desktop desktop = Desktop.getDesktop();
-//                    try {
-//                        desktop.browse(e.getURL().toURI());
-//                    } catch (Exception ex) {
-//                        ex.printStackTrace();
-//                    }
-//                }
-//            }
-//        });
 
         // Generate new line of txtMessage on CTRL + ENTER
         InputMap input = txtMessage.getInputMap();
@@ -330,25 +206,19 @@ public class ChatRoomGUI extends JFrame {
             }
         });
 
-        chooseFileButton.addActionListener(new ActionListener() {
+        lblAttachment.addMouseListener(new MouseAdapter() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+
+                //Choose File
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Chọn file muốn gửi.");
 
                 if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
                     fileToSend[0] = fileChooser.getSelectedFile();
-                }
-                sendFileButton.setEnabled(true);
-            }
-        });
 
-        sendFileButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (fileToSend[0] == null){
-                    JOptionPane.showMessageDialog(ChatRoomGUI.this,"Bạn chưa chọn file để gửi.");
-                } else {
+                    //Send File
                     try {
                         FileInputStream fileInputStream = null;
                         fileInputStream = new FileInputStream(fileToSend[0].getAbsoluteFile());
@@ -360,7 +230,6 @@ public class ChatRoomGUI extends JFrame {
                         }
                         String fileName = fileToSend[0].getName();
                         String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length());
-//                        System.out.println("File extension: " + fileExtension);
                         if (fileExtensionsBlacklist.contains(fileExtension)) {
                             JOptionPane.showMessageDialog(ChatRoomGUI.this, "Loại file không được hỗ trợ!");
                             return;
@@ -392,7 +261,6 @@ public class ChatRoomGUI extends JFrame {
                         ioException.printStackTrace();
                     }
                 }
-                sendFileButton.setEnabled(false);
             }
         });
 
