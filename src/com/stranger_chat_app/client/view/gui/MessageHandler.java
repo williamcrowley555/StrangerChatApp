@@ -111,9 +111,15 @@ public class MessageHandler {
     }
 
     public void addAudioMessage(Audio audio, String you, String stranger,String userType) {
+        Message message = new Message();
+        message.setSender(stranger);
+        message.setRecipient(you);
+        calculateChatBubbleSize(message, userType);
         AudioPanel audioPanel = new AudioPanel(audio);
         JPanel audioMessage = createAudioChatBubble(audioPanel, you, stranger, userType);
-
+        audioMessage.setVisible(true);
+        vertical.add(audioMessage);
+        messageArea.revalidate();
     }
 
     public boolean addFileMessage(Message message, String userType, String fileName) {
@@ -168,7 +174,6 @@ public class MessageHandler {
     public JPanel createAudioChatBubble(AudioPanel audioPanel, String you, String stranger, String userType) {
         JPanel chatBubble = new JPanel();
         chatBubble.setLayout(new BorderLayout());
-
         ImageIcon imageIcon = new ImageIcon(new ImageIcon(getClass().getResource(defaultAvatarLocation))
                 .getImage().getScaledInstance(32, 32, Image.SCALE_DEFAULT));
         JLabel nickname = new JLabel(userType.equals("sender") ? "Bạn" : stranger);

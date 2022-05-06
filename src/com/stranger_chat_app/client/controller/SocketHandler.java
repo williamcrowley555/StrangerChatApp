@@ -448,9 +448,9 @@ public class SocketHandler {
 
     private void onReceiveAudio(String received) {
         Audio audio = Audio.parse(received);
-
+        System.out.println("audio buffer = " + audio.toJSONString());
 //        Message message = Message.parse(received);
-//        RunClient.chatRoomGUI.addChatMessage(message);
+        RunClient.chatRoomGUI.addAudio(audio, "recipient" );
     }
 
     private void onReceiveLogout(String received) {
@@ -524,6 +524,7 @@ public class SocketHandler {
     }
 
     public void sendAudio(String data) {
+        System.out.println("run sendAudio");
         sendData(DataType.AUDIO, data);
     }
 

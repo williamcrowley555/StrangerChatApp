@@ -170,8 +170,8 @@ public class ChatRoomGUI extends JFrame {
 //        messageArea.setCaretPosition(messageArea.getDocument().getLength());
     }
 
-    public void addAudio(Audio audio,String you, String stranger, String userType) {
-        messageHandler.addAudioMessage(audio, you, stranger, "recipient");
+    public void addAudio(Audio audio, String userType) {
+        messageHandler.addAudioMessage(audio, you, stranger, userType);
     }
 
     private void sendMessage(String content) {

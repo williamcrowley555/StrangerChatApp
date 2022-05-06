@@ -4,6 +4,7 @@ import com.stranger_chat_app.client.thread.AudioPlayer;
 import com.stranger_chat_app.shared.model.Audio;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -13,8 +14,8 @@ public class AudioPanel extends JPanel {
     private JLabel lblState;
     private JLabel lblTime;
 
-    private String urlPlay = "com/stranger_chat_app/client/asset/icons8-play-24.png";
-    private String urlStop = "com/stranger_chat_app/client/asset/icons8-stop-24.png";
+    private String urlPlay = "/com/stranger_chat_app/client/asset/icons8-play-24.png";
+    private String urlStop = "/com/stranger_chat_app/client/asset/icons8-stop-24.png";
 
     private Audio audio;
 
@@ -27,10 +28,17 @@ public class AudioPanel extends JPanel {
     }
 
     public void initComponents() {
+        setLayout(new FlowLayout());
+        add(new JLabel(""));
+        add(lblState);
+        add(lblTime);
+        add(audioBar);
+
+
         audioPlayer = new AudioPlayer();
         audioPlayer.setAudio(audio.getBuffer());
         audioPlayer.setjProgressBar(audioBar);
-
+        setVisible(true);
     }
 
     public void event() {
@@ -55,6 +63,14 @@ public class AudioPanel extends JPanel {
     public ImageIcon getImageIcon(String url) {
         ImageIcon imageIcon = new ImageIcon(new ImageIcon(getClass().getResource(url)).getImage());
         return imageIcon;
+    }
+
+    public static void main(String[] args) {
+        byte[] buffer2 = new byte[1024];
+        int time2 = 200;
+        Audio audio = new Audio(buffer2, time2);
+        AudioPanel audioPanel = new AudioPanel(audio);
+        audioPanel.setVisible(true);
     }
 
 }

@@ -480,7 +480,6 @@ public class Client implements Runnable {
 
     private void onReceiveAudio(String received) {
         Client stranger = RunServer.clientManager.find(this.stranger.getNickname());
-
         if (stranger != null) {
             // call stranger
             stranger.sendData(DataType.AUDIO, received);

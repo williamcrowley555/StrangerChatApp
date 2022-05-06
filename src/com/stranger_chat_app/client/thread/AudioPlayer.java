@@ -54,14 +54,14 @@ public class AudioPlayer extends Thread {
             buffer = new byte[bufferSize];
 
             isPlaying = true;
-            count = audioInputStream.read(buffer, 0, buffer.length);
 
-            while (isPlaying && count != -1) {
+            while (isPlaying && (count = audioInputStream.read(buffer, 0, buffer.length)) != -1) {
                 jProgressBar.setValue(jProgressBar.getValue() + 1);
                 if (count > 0) {
                     speaker.write(buffer, 0, count);
                 }
             }
+            jProgressBar.setValue(jProgressBar.getMaximum());
 
             closeSpeaker();
 
@@ -71,8 +71,9 @@ public class AudioPlayer extends Thread {
     }
 
     public void closeSpeaker() {
-        speaker.drain();
         speaker.close();
+        speaker.drain();
+
     }
 
     public void stopPlay() {
