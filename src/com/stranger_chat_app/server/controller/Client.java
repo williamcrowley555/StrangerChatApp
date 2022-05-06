@@ -115,6 +115,10 @@ public class Client implements Runnable {
                             onReceiveVoice(receivedContent);
                             break;
 
+                        case AUDIO:
+                            onReceiveAudio(receivedContent);
+                            break;
+
                         case LOGOUT:
                             System.out.println(nickname + " logged out");
                             onReceiveLogout(receivedContent);
@@ -471,6 +475,15 @@ public class Client implements Runnable {
         if (stranger != null) {
             // call stranger
             stranger.sendData(DataType.VOICE, received);
+        }
+    }
+
+    private void onReceiveAudio(String received) {
+        Client stranger = RunServer.clientManager.find(this.stranger.getNickname());
+
+        if (stranger != null) {
+            // call stranger
+            stranger.sendData(DataType.AUDIO, received);
         }
     }
 

@@ -4,6 +4,7 @@ import com.stranger_chat_app.client.RunClient;
 import com.stranger_chat_app.client.model.MessageStore;
 import com.stranger_chat_app.client.thread.AudioRecorder;
 import com.stranger_chat_app.server.controller.MyFile;
+import com.stranger_chat_app.shared.model.Audio;
 import com.stranger_chat_app.shared.model.Message;
 
 import javax.swing.*;
@@ -20,7 +21,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.io.*;
@@ -168,6 +168,10 @@ public class ChatRoomGUI extends JFrame {
 //        }
 //
 //        messageArea.setCaretPosition(messageArea.getDocument().getLength());
+    }
+
+    public void addAudio(Audio audio,String you, String stranger, String userType) {
+        messageHandler.addAudioMessage(audio, you, stranger, "recipient");
     }
 
     private void sendMessage(String content) {
