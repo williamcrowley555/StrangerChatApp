@@ -53,7 +53,7 @@ public class AudioPanel extends JPanel {
                 } else {
                     ImageIcon stopIcon = getImageIcon(urlStop);
                     lblState.setIcon(stopIcon);
-                    audioPlayer.start();
+                    audioPlayer.playAudio();
                     isPlaying = true;
                 }
             }
