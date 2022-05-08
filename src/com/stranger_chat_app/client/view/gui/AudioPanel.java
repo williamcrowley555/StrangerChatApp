@@ -15,16 +15,16 @@ public class AudioPanel extends JPanel {
     private JLabel lblTime;
 
     private String urlPlay = "/com/stranger_chat_app/client/asset/icons8-play-24.png";
-    private String urlStop = "/com/stranger_chat_app/client/asset/icons8-stop-24.png";
+    private String urlStop = "/com/stranger_chat_app/client/asset/icons8-pause-24.png";
 
     private Audio audio;
-
-    private boolean isPlaying = false;
 
     public AudioPanel(Audio audio) {
         this.audio = audio;
         initComponents();
-        event();
+
+        audioPlayer = new AudioPlayer(audio.getBuffer());
+        audioPlayer.start();
     }
 
     public void initComponents() {
@@ -33,28 +33,28 @@ public class AudioPanel extends JPanel {
         add(lblState);
         add(lblTime);
         add(audioBar);
-
-
-        audioPlayer = new AudioPlayer();
-        audioPlayer.setAudio(audio.getBuffer());
-        audioPlayer.setjProgressBar(audioBar);
         setVisible(true);
+
+        event();
     }
 
     public void event() {
         lblState.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(isPlaying) {
-                    ImageIcon playIcon = getImageIcon(urlPlay);
-                    lblState.setIcon(playIcon);
-                    audioPlayer.stopPlay();
-                    isPlaying = false;
+                if (audioPlayer.isRunning()) {
+                    if (audioPlayer.isPlaying()) {
+                        ImageIcon playIcon = getImageIcon(urlPlay);
+                        lblState.setIcon(playIcon);
+                        audioPlayer.pause();
+                    } else {
+                        ImageIcon stopIcon = getImageIcon(urlStop);
+                        lblState.setIcon(stopIcon);
+                        audioPlayer.play();
+                    }
                 } else {
-                    ImageIcon stopIcon = getImageIcon(urlStop);
-                    lblState.setIcon(stopIcon);
+                    audioPlayer = new AudioPlayer(audio.getBuffer());
                     audioPlayer.start();
-                    isPlaying = true;
                 }
             }
         });

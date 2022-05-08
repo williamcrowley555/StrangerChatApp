@@ -447,10 +447,26 @@ public class SocketHandler {
     }
 
     private void onReceiveAudio(String received) {
+//        Audio audio = Audio.parse(received);
+//        System.out.println("audio buffer = " + audio.toJSONString());
+//        RunClient.chatRoomGUI.addAudio(audio, "recipient" );
+
+        if (speaker == null) {
+            AudioFormat format = new AudioFormat(16000, 8, 2, true, true);
+            DataLine.Info dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
+
+            try {
+                // Selecting and starting speaker
+                speaker = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
+                speaker.open(format);
+                speaker.start();
+            } catch (LineUnavailableException e) {
+                e.printStackTrace();
+            }
+        }
+
         Audio audio = Audio.parse(received);
-        System.out.println("audio buffer = " + audio.toJSONString());
-//        Message message = Message.parse(received);
-        RunClient.chatRoomGUI.addAudio(audio, "recipient" );
+        speaker.write(audio.getBuffer(), 0, audio.getBuffer().length);
     }
 
     private void onReceiveLogout(String received) {
