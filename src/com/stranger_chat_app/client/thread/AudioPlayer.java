@@ -1,11 +1,13 @@
 package com.stranger_chat_app.client.thread;
 
+import com.stranger_chat_app.client.util.TimeUtils;
+import com.stranger_chat_app.client.view.gui.AudioPanel;
+
 import javax.sound.sampled.*;
-import javax.swing.*;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 public class AudioPlayer extends Thread {
     private float frequency = 8000.0F;  //8000,11025,16000,22050,44100
@@ -18,11 +20,15 @@ public class AudioPlayer extends Thread {
 
     private AudioInputStream audioInputStream;
     private Clip clip;
+    private long totalSecs;
+    private long currentSecs = 0;
 
     private byte[] data;
+    private AudioPanel audioPanel;
 
-    public AudioPlayer(byte[] data) {
+    public AudioPlayer(byte[] data, AudioPanel audioPanel) {
         this.data = data;
+        this.audioPanel = audioPanel;
     }
 
     @Override
@@ -35,9 +41,19 @@ public class AudioPlayer extends Thread {
                 clip = AudioSystem.getClip();
                 clip.open(audioInputStream);
 
+                totalSecs = TimeUnit.MICROSECONDS.toSeconds(clip.getMicrosecondLength());
+                audioPanel.getLblTimestamp().setText(TimeUtils.convertToTimeString(totalSecs));
+                audioPanel.getAudioBar().setMaximum((int) totalSecs);
                 isRunning = true;
 
                 while (isRunning) {
+                    if (clip.isRunning()) {
+                        currentSecs = TimeUnit.MICROSECONDS.toSeconds(clip.getMicrosecondPosition());
+
+                        audioPanel.getLblTimestamp().setText(TimeUtils.convertToTimeString(totalSecs - currentSecs));
+                        audioPanel.getAudioBar().setValue((int) currentSecs);
+                    }
+
                     if (clip.getMicrosecondPosition() == clip.getMicrosecondLength()) {
                         isRunning = false;
                     }
@@ -46,39 +62,40 @@ public class AudioPlayer extends Thread {
                 e.printStackTrace();
             } finally {
                 close();
+                currentSecs = 0;
+                audioPanel.getLblTimestamp().setText(TimeUtils.convertToTimeString(totalSecs));
+                audioPanel.getAudioBar().setValue(0);
+                audioPanel.changePlayerState(AudioPanel.PLAYER_STATE_STOP);
             }
         }
     }
 
     public void play() {
-        clip.start();
-        isPlaying = true;
+        if (!clip.isRunning()) {
+            clip.start();
+            isPlaying = true;
+        }
     }
 
     public void pause() {
-        clip.stop();
-        isPlaying = false;
+        if (clip.isRunning()) {
+            clip.stop();
+            isPlaying = false;
+        }
     }
 
     private void close() {
         clip.drain();
         clip.stop();
+        isPlaying = false;
     }
 
     private AudioFormat getAudioFormat() {
-        float sampleRate = frequency;
-        //8000,11025,16000,22050,44100
-        int sampleSizeInBits = samplesize;
-        //8,16
-        int channels = 1;
-        //1,2
+        float sampleRate = 16000;
+        int sampleSizeInBits = 8;
+        int channels = 2;
         boolean signed = true;
-        //true,false
-        boolean bigEndian = false;
-        //true,false
-        //return new AudioFormat( AudioFormat.Encoding.PCM_SIGNED, 8000.0f, 8, 1, 1,
-        //8000.0f, false );
-
+        boolean bigEndian = true;
         return new AudioFormat(sampleRate, sampleSizeInBits, channels, signed, bigEndian);
     }
 
@@ -88,6 +105,10 @@ public class AudioPlayer extends Thread {
 
     public boolean isPlaying() {
         return isPlaying;
+    }
+
+    public long getCurrentSecs() {
+        return currentSecs;
     }
 
     public static void main(String[] args) throws UnsupportedAudioFileException, IOException, LineUnavailableException {

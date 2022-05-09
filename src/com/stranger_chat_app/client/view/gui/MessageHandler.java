@@ -1,13 +1,11 @@
 package com.stranger_chat_app.client.view.gui;
 
 import com.stranger_chat_app.client.RunClient;
-import com.stranger_chat_app.shared.model.Audio;
 import com.stranger_chat_app.shared.model.Message;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -15,7 +13,6 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.concurrent.Flow;
 
 public class MessageHandler {
     JPanel messageArea;
@@ -110,12 +107,12 @@ public class MessageHandler {
         return true;
     }
 
-    public void addAudioMessage(Audio audio, String you, String stranger,String userType) {
+    public void addAudioMessage(byte[] data, String you, String stranger,String userType) throws InterruptedException {
         Message message = new Message();
         message.setSender(stranger);
         message.setRecipient(you);
         calculateChatBubbleSize(message, userType);
-        AudioPanel audioPanel = new AudioPanel(audio);
+        AudioPanel audioPanel = new AudioPanel(data);
         JPanel audioMessage = createAudioChatBubble(audioPanel, you, stranger, userType);
         audioMessage.setVisible(true);
         vertical.add(audioMessage);

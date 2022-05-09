@@ -4,7 +4,6 @@ import com.stranger_chat_app.client.RunClient;
 import com.stranger_chat_app.client.model.MessageStore;
 import com.stranger_chat_app.client.thread.AudioRecorder;
 import com.stranger_chat_app.server.controller.MyFile;
-import com.stranger_chat_app.shared.model.Audio;
 import com.stranger_chat_app.shared.model.Message;
 
 import javax.swing.*;
@@ -170,8 +169,8 @@ public class ChatRoomGUI extends JFrame {
 //        messageArea.setCaretPosition(messageArea.getDocument().getLength());
     }
 
-    public void addAudio(Audio audio, String userType) {
-        messageHandler.addAudioMessage(audio, you, stranger, userType);
+    public void addAudio(byte[] data, String userType) throws InterruptedException {
+        messageHandler.addAudioMessage(data, you, stranger, userType);
     }
 
     private void sendMessage(String content) {

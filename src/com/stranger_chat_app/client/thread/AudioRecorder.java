@@ -1,20 +1,18 @@
 package com.stranger_chat_app.client.thread;
 
 import com.stranger_chat_app.client.RunClient;
-import com.stranger_chat_app.shared.model.Audio;
-import com.stranger_chat_app.shared.model.Message;
 
 import javax.sound.sampled.*;
+import java.io.ByteArrayOutputStream;
+import java.util.Base64;
 
 public class AudioRecorder extends Thread {
     private boolean isRecord;
     private TargetDataLine microphone;
     private AudioFormat audioFormat;
     private DataLine.Info info;
+    private ByteArrayOutputStream out;
     private int recordTime;
-    private byte[] buffer;
-
-    public Audio audio;
 
     // Hàm chính, khi chạy sẽ tiến hành thu âm cho đến khi dừng lại.
     @Override
@@ -30,9 +28,7 @@ public class AudioRecorder extends Thread {
         int channels = 2;
         boolean signed = true;
         boolean bigEndian = true;
-        AudioFormat format = new AudioFormat(sampleRate, sampleSizeInBits,
-                channels, signed, bigEndian);
-        return format;
+        return new AudioFormat(sampleRate, sampleSizeInBits, channels, signed, bigEndian);
     }
 
     // Hàm khởi tạo micro để bắt đầu ghi âm
@@ -49,14 +45,17 @@ public class AudioRecorder extends Thread {
 
     // Hàm thu âm
     public void startRecord() {
-        buffer = new byte[1024];
-        recordTime = 0;
+        out = new ByteArrayOutputStream();
+        int numBytesRead;
+        byte[] data = new byte[1024];
+        microphone.start();
+
         isRecord = true;
 
-        microphone.start();
-        while (isRecord) {
-            recordTime++;
-            microphone.read(buffer, 0, buffer.length);
+//        Maximum recording time is 10 minutes
+        while (isRecord && recordTime <= 600) {
+            numBytesRead = microphone.read(data, 0, data.length);
+            out.write(data, 0, numBytesRead);
         }
 
         endRecord();
@@ -67,10 +66,9 @@ public class AudioRecorder extends Thread {
         microphone.close();
         microphone.drain();
 
-        audio = new Audio(buffer, recordTime);
-        RunClient.socketHandler.sendAudio(audio.toJSONString());
+        String strData = Base64.getEncoder().encodeToString(out.toByteArray());
+        RunClient.socketHandler.sendAudio(strData);
     }
-
 
     // Hàm dừng thu âm
     public void terminate() {

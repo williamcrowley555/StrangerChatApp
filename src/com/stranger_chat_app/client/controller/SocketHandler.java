@@ -5,11 +5,8 @@ import com.stranger_chat_app.client.view.enums.CallState;
 import com.stranger_chat_app.client.view.enums.GUIName;
 import com.stranger_chat_app.client.view.enums.MainMenuState;
 import com.stranger_chat_app.client.view.gui.ChatRoomGUI;
-import com.stranger_chat_app.server.RunServer;
-import com.stranger_chat_app.server.controller.Client;
 import com.stranger_chat_app.server.controller.MyFile;
 import com.stranger_chat_app.shared.constant.DataType;
-import com.stranger_chat_app.shared.model.Audio;
 import com.stranger_chat_app.shared.model.Data;
 import com.stranger_chat_app.shared.model.Message;
 import com.stranger_chat_app.shared.security.AESUtil;
@@ -25,7 +22,6 @@ import java.io.*;
 import java.net.Socket;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -194,6 +190,8 @@ public class SocketHandler {
         } catch (InvalidKeyException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
             try {
@@ -446,27 +444,9 @@ public class SocketHandler {
         speaker.write(buffer, 0, buffer.length);
     }
 
-    private void onReceiveAudio(String received) {
-//        Audio audio = Audio.parse(received);
-//        System.out.println("audio buffer = " + audio.toJSONString());
-//        RunClient.chatRoomGUI.addAudio(audio, "recipient" );
-
-        if (speaker == null) {
-            AudioFormat format = new AudioFormat(16000, 8, 2, true, true);
-            DataLine.Info dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
-
-            try {
-                // Selecting and starting speaker
-                speaker = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
-                speaker.open(format);
-                speaker.start();
-            } catch (LineUnavailableException e) {
-                e.printStackTrace();
-            }
-        }
-
-        Audio audio = Audio.parse(received);
-        speaker.write(audio.getBuffer(), 0, audio.getBuffer().length);
+    private void onReceiveAudio(String received) throws InterruptedException {
+        byte[] data = Base64.getDecoder().decode(received);
+        RunClient.chatRoomGUI.addAudio(data, "recipient" );
     }
 
     private void onReceiveLogout(String received) {
@@ -540,7 +520,6 @@ public class SocketHandler {
     }
 
     public void sendAudio(String data) {
-        System.out.println("run sendAudio");
         sendData(DataType.AUDIO, data);
     }
 
