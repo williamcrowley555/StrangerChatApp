@@ -21,9 +21,9 @@ public class AudioPanel extends JPanel {
 
     private byte[] data;
 
-    public AudioPanel(byte[] data) throws InterruptedException {
+    public AudioPanel(byte[] data, String userType) throws InterruptedException {
         this.data = data;
-        initComponents();
+        initComponents(userType);
 
         generatePlayer(data);
     }
@@ -79,8 +79,8 @@ public class AudioPanel extends JPanel {
         });
     }
 
-    public void initComponents() {
-        setLayout(new FlowLayout());
+    public void initComponents(String userType) {
+        setLayout(new FlowLayout(userType.equals("sender") ? FlowLayout.RIGHT : FlowLayout.LEFT));
         add(new JLabel(""));
         add(lblState);
         add(lblTimestamp);

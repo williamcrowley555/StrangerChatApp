@@ -112,7 +112,7 @@ public class MessageHandler {
         message.setSender(stranger);
         message.setRecipient(you);
         calculateChatBubbleSize(message, userType);
-        AudioPanel audioPanel = new AudioPanel(data);
+        AudioPanel audioPanel = new AudioPanel(data, userType);
         JPanel audioMessage = createAudioChatBubble(audioPanel, you, stranger, userType);
         audioMessage.setVisible(true);
         vertical.add(audioMessage);
@@ -124,7 +124,7 @@ public class MessageHandler {
         message.setSender(you);
         message.setRecipient(you);
         calculateChatBubbleSize(message, userType);
-        AudioPanel audioPanel = new AudioPanel(data);
+        AudioPanel audioPanel = new AudioPanel(data, userType);
         JPanel audioMessage = createAudioChatBubble(audioPanel, you, you, userType);
         audioMessage.setVisible(true);
         vertical.add(audioMessage);
