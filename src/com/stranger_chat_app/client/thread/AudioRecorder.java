@@ -3,6 +3,7 @@ package com.stranger_chat_app.client.thread;
 import com.stranger_chat_app.client.RunClient;
 
 import javax.sound.sampled.*;
+import javax.swing.*;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 
@@ -67,7 +68,15 @@ public class AudioRecorder extends Thread {
         microphone.drain();
 
         String strData = Base64.getEncoder().encodeToString(out.toByteArray());
-        RunClient.socketHandler.sendAudio(strData);
+        try {
+            int selected = JOptionPane.showConfirmDialog(null, "Bạn có muốn gửi đoạn ghi âm không?");
+            if (selected == JOptionPane.YES_OPTION) {
+                RunClient.chatRoomGUI.addAudio(out.toByteArray(), "sender");
+                RunClient.socketHandler.sendAudio(strData);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     // Hàm dừng thu âm

@@ -119,6 +119,18 @@ public class MessageHandler {
         messageArea.revalidate();
     }
 
+    public void showAudioMessage(byte[] data, String you, String userType) throws InterruptedException {
+        Message message = new Message();
+        message.setSender(you);
+        message.setRecipient(you);
+        calculateChatBubbleSize(message, userType);
+        AudioPanel audioPanel = new AudioPanel(data);
+        JPanel audioMessage = createAudioChatBubble(audioPanel, you, you, userType);
+        audioMessage.setVisible(true);
+        vertical.add(audioMessage);
+        messageArea.revalidate();
+    }
+
     public boolean addFileMessage(Message message, String userType, String fileName) {
         try {
             calculateChatBubbleSize(message, userType);
