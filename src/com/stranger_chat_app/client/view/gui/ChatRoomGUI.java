@@ -7,6 +7,9 @@ import com.stranger_chat_app.shared.model.Message;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.filechooser.FileView;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
@@ -62,6 +65,7 @@ public class ChatRoomGUI extends JFrame {
                     , "ps1xml", "ps2", "ps2xml", "psc1", "psc2", "reg", "lnk"));
                     
     public static String path;
+    public static Icon fileIcon;
     private boolean eventNotAdded = true;
 
     private boolean isCalling = false;
@@ -86,6 +90,8 @@ public class ChatRoomGUI extends JFrame {
             messageHandler.addFileMessage(message, userType, fileName[0]);
         } else {
             userType = "recipient";
+            if(ChatRoomGUI.fileIcon != null)
+                System.out.println("recipient icon not null");
             messageHandler.addFileMessage(message, userType, null);
         }
     }
@@ -212,7 +218,7 @@ public class ChatRoomGUI extends JFrame {
                 super.mouseClicked(e);
 
                 //Choose File
-                JFileChooser fileChooser = new JFileChooser();
+                JFileChooser fileChooser = windowsJFileChooser(new JFileChooser());
                 fileChooser.setDialogTitle("Chọn file muốn gửi.");
 
                 if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
@@ -253,8 +259,9 @@ public class ChatRoomGUI extends JFrame {
 
                         Message message = new Message(you, stranger, myFile.toJSONString());
 
-                        RunClient.socketHandler.sendFile(message);
                         addFileMessage(message, myFile.getName());
+                        RunClient.socketHandler.sendFile(message);
+
                     } catch (FileNotFoundException ex) {
                         JOptionPane.showMessageDialog(ChatRoomGUI.this, "Không tìm thấy file đã chọn, vui lòng chọn lại!");
                     } catch (IOException ioException) {
@@ -342,6 +349,16 @@ public class ChatRoomGUI extends JFrame {
         this.lblStranger.setText(stranger);
     }
 
+    public static JFileChooser windowsJFileChooser(JFileChooser chooser){
+        LookAndFeel previousLF = UIManager.getLookAndFeel();
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            chooser = new JFileChooser();
+            UIManager.setLookAndFeel(previousLF);
+        } catch (IllegalAccessException | UnsupportedLookAndFeelException | InstantiationException | ClassNotFoundException e) {}
+        return chooser;
+    }
+
     public String getYou() {
         return you;
     }
@@ -366,3 +383,5 @@ public class ChatRoomGUI extends JFrame {
         isCalling = calling;
     }
 }
+
+

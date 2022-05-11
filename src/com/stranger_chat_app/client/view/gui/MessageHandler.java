@@ -7,10 +7,12 @@ import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.HyperlinkEvent;
+import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -22,6 +24,7 @@ public class MessageHandler {
     public static final Color messengerBlue = new Color(6, 149, 255);
     public static final Color messengerGreen = new Color(38, 166, 91);
     private final String defaultAvatarLocation = "/com/stranger_chat_app/client/asset/user-avatar.png";
+    private final String defaultTempFileLocation = System.getProperty("user.dir") +"\\src\\com\\stranger_chat_app\\client\\asset\\";
     private final int defaultSpacerHeight = 30;
     private boolean eventNotAdded = true;
     private int contentWidth;
@@ -199,7 +202,6 @@ public class MessageHandler {
 
         htmlContent = "<a style='color: #0000EE' href=\"" + file_name + "\">"+ file_name + "</a> ";
 
-
         labelText = String.format("<html><div WIDTH=%d>%s</div></html>", textBubbleWidth, htmlContent);
         JLabel text = new JLabel(labelText);
         text.setForeground(Color.BLACK);
@@ -209,10 +211,28 @@ public class MessageHandler {
         else
             text = makeFileHyperLink(message, file_name, file_name, 0, file_name.length(), false);
 
+        JLabel fileIcon = new JLabel(getDefaultSystemFileIcon(file_name));
+        fileBubble.add(fileIcon);
         fileBubble.add(text);
     }
 
-    boolean containURL(String message){
+    public Icon getDefaultSystemFileIcon(String fileName){
+        //Create a temp file from file name to get default icon
+        File file = new File(defaultTempFileLocation + fileName);
+
+        try {
+            file.createNewFile();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+
+        Icon fileIcon = FileSystemView.getFileSystemView().getSystemIcon(file);
+        file.delete();
+
+        return fileIcon;
+    }
+
+    public boolean containURL(String message){
         String [] parts = message.split("\\s+");
         for( String item : parts ) {
             try {
