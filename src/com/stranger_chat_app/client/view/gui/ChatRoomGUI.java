@@ -1,11 +1,17 @@
 package com.stranger_chat_app.client.view.gui;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import com.stranger_chat_app.client.RunClient;
 import com.stranger_chat_app.client.model.MessageStore;
 import com.stranger_chat_app.server.controller.MyFile;
 import com.stranger_chat_app.shared.model.Message;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
@@ -17,10 +23,7 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
@@ -48,6 +51,7 @@ public class ChatRoomGUI extends JFrame {
     private JLabel lblCall;
     private JPanel pnlMessageArea;
     private JLabel lblAttachment;
+    private JPanel pnlUtilities;
     private JLabel lblStranger;
     private JLabel lblStatus;
 
@@ -67,11 +71,18 @@ public class ChatRoomGUI extends JFrame {
     public static String path;
     public static Icon fileIcon;
     private boolean eventNotAdded = true;
-
     private boolean isCalling = false;
+
+    JDialog emojiDialog;
     MessageHandler messageHandler;
     public ChatRoomGUI() {
         super();
+        try{
+            UIManager.setLookAndFeel(new FlatIntelliJLaf());
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
         setTitle("Phòng chat - Bạn: " + RunClient.socketHandler.getNickname());
         setContentPane(pnlMain);
         setSize(600, 600);
@@ -134,48 +145,33 @@ public class ChatRoomGUI extends JFrame {
 
 
     private void initComponents() {
+        scrollPanelMsg.setBorder(new MatteBorder(2,2,2,2, MessageHandler.flatGrey));
+
         txtMessage.setMargin(new Insets(3, 3, 3, 3));
         inputPanel.setBorder(BorderFactory.createEmptyBorder(2, 0, 5, 3));
 
         topPanel.setLayout(new BorderLayout(10, 10));
         topPanel.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
         JPanel userPanel = new JPanel(new GridLayout(0, 1));
+        userPanel.setOpaque(false);
 
         lblStranger = new JLabel();
-        lblStranger.setOpaque(true);
+        lblStranger.setOpaque(false);
         lblStatus = new JLabel();
         lblStatus.setText("Online");
         lblStatus.setForeground(Color.GREEN);
-        lblStatus.setOpaque(true);
+        lblStatus.setOpaque(false);
         JLabel icon = new JLabel();
         ImageIcon imageIcon = new ImageIcon(new ImageIcon(getClass().getResource("/com/stranger_chat_app/client/asset/icons8-anonymous-24.png"))
                 .getImage().getScaledInstance(24, 24, Image.SCALE_DEFAULT));
         icon.setIcon(imageIcon);
-        icon.setOpaque(true);
+        icon.setOpaque(false);
 
         userPanel.add(lblStranger);
         userPanel.add(lblStatus);
         topPanel.add(userPanel, BorderLayout.CENTER);
         topPanel.add(icon, BorderLayout.WEST);
         topPanel.add(lblCall, BorderLayout.EAST);
-
-        // Add CSS Styles
-        styleSheet.addRule(".my-msg {\n" +
-                "  padding: 10px;\n" +
-                "  color: #fff; \n" +
-                "  background: #3498DB;\n" +
-                "}");
-        styleSheet.addRule(".stranger-msg {\n" +
-                "  padding: 10px;\n" +
-                "  color: #fff; \n" +
-                "  background: #26A65B;\n" +
-                "}");
-        styleSheet.addRule(".msg-info-name {\n" +
-                "  margin-bottom: 10px;\n" +
-                "  font-weight: bold;\n" +
-                "}");
-
-        kit.setStyleSheet(styleSheet);
 
         // Generate new line of txtMessage on CTRL + ENTER
         InputMap input = txtMessage.getInputMap();
@@ -274,6 +270,12 @@ public class ChatRoomGUI extends JFrame {
         lblEmoji.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                if(emojiDialog != null)
+                {
+                    emojiDialog.requestFocus();
+                    return;
+                }
+
                 //Values to position the emojiDialog
                 int offsetX = 0,
                     offsetY = -240;
@@ -282,7 +284,19 @@ public class ChatRoomGUI extends JFrame {
                 JLabel label = (JLabel) e.getSource();
                 Point lablePosition = label.getLocationOnScreen();
 
-                JDialog emojiDialog = new JDialog();
+                emojiDialog = new JDialog();
+                emojiDialog.addWindowFocusListener(new WindowFocusListener()
+                {
+                    @Override
+                    public void windowLostFocus(WindowEvent e)
+                    {
+                        emojiDialog.setVisible(false);
+                        emojiDialog.dispose();
+                        emojiDialog = null;
+                    }
+                    @Override
+                    public void windowGainedFocus(WindowEvent e) {}
+                });
 
                 //Set location
                 emojiDialog.setLocation(lablePosition.x + offsetX, lablePosition.y + offsetY + label.getHeight());
@@ -327,7 +341,7 @@ public class ChatRoomGUI extends JFrame {
 
                 emojiDialog.setContentPane(emojiTable);
                 emojiDialog.setTitle("Chọn emoji");
-                emojiDialog.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
+                //emojiDialog.setModalityType(JDialog.DEFAULT_MODALITY_TYPE);
                 emojiDialog.pack();
                 emojiDialog.setVisible(true);
             }

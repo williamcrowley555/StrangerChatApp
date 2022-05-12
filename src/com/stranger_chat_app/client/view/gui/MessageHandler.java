@@ -6,6 +6,7 @@ import com.stranger_chat_app.shared.model.Message;
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
@@ -23,6 +24,7 @@ public class MessageHandler {
     Box vertical;
     public static final Color messengerBlue = new Color(6, 149, 255);
     public static final Color messengerGreen = new Color(38, 166, 91);
+    public static final Color flatGrey = new Color(218, 223, 225);
     private final String defaultAvatarLocation = "/com/stranger_chat_app/client/asset/user-avatar.png";
     private final String defaultTempFileLocation = System.getProperty("user.dir") +"\\src\\com\\stranger_chat_app\\client\\asset\\";
     private final int defaultSpacerHeight = 30;
@@ -35,9 +37,8 @@ public class MessageHandler {
     public MessageHandler(JPanel messageArea) {
         this.messageArea = messageArea;
         this.messageArea.setLayout(new BorderLayout());
-        this.messageArea.setBorder(new EmptyBorder(5,5,5,5));
+        this.messageArea.setBorder(new EmptyBorder(5,5,0,5));
         vertical = Box.createVerticalBox();
-
         this.messageArea.add(vertical, BorderLayout.PAGE_START);
 
     }
