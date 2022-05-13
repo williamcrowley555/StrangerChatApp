@@ -5,6 +5,7 @@ import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.stranger_chat_app.client.RunClient;
 import com.stranger_chat_app.client.model.MessageStore;
+import com.stranger_chat_app.client.thread.AudioRecorder;
 import com.stranger_chat_app.server.controller.MyFile;
 import com.stranger_chat_app.shared.model.Message;
 
@@ -25,7 +26,6 @@ import javax.swing.text.html.StyleSheet;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.io.*;
@@ -52,6 +52,7 @@ public class ChatRoomGUI extends JFrame {
     private JPanel pnlMessageArea;
     private JLabel lblAttachment;
     private JPanel pnlUtilities;
+    private JLabel lblAudio;
     private JLabel lblStranger;
     private JLabel lblStatus;
 
@@ -61,20 +62,25 @@ public class ChatRoomGUI extends JFrame {
 
     private String you;
     private String stranger;
+    private String urlBlockMicrophone = "/com/stranger_chat_app/client/asset/icons8-block-microphone-24.png";
+    private String urlMicrophone = "/com/stranger_chat_app/client/asset/icons8-microphone-24.png";
 
     private final File[] fileToSend = new File[1];
     private final float fileSizeLimit = 250F;
-    private final ArrayList<String> fileExtensionsBlacklist = new ArrayList<>( Arrays
+    private final ArrayList<String> fileExtensionsBlacklist = new ArrayList<>(Arrays
             .asList("bat", "cmd", "exe", "jar", "msi", "msc", "js", "ps1"
                     , "ps1xml", "ps2", "ps2xml", "psc1", "psc2", "reg", "lnk"));
-                    
+
     public static String path;
     public static Icon fileIcon;
     private boolean eventNotAdded = true;
     private boolean isCalling = false;
 
     JDialog emojiDialog;
+    private boolean isRecord = false;
     MessageHandler messageHandler;
+    AudioRecorder audioRecorder;
+
     public ChatRoomGUI() {
         super();
         try{
@@ -90,8 +96,9 @@ public class ChatRoomGUI extends JFrame {
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         initComponents();
         messageHandler = new MessageHandler(pnlMessageArea);
+
     }
-    
+
     public void addFileMessage(Message message, String... fileName) {
         MessageStore.add(message);
         String userType = "";
@@ -112,8 +119,12 @@ public class ChatRoomGUI extends JFrame {
         messageHandler.addTextMessage(message, "recipient");
     }
 
+    public void addAudio(byte[] data, String userType) throws InterruptedException {
+        messageHandler.addAudioMessage(data, you, stranger, userType);
+    }
+
     private void sendMessage(String content) {
-        if(!content.equals("")) {
+        if (!content.equals("")) {
             Message message = new Message(you, stranger, content);
 
             RunClient.socketHandler.sendChatMessage(message);
@@ -125,16 +136,16 @@ public class ChatRoomGUI extends JFrame {
     }
 
     //Auto hyperlink urls if there are URLs in message
-    private String handleHyperlinkUrls(String message){
-        String [] parts = message.split("\\s+");
+    private String handleHyperlinkUrls(String message) {
+        String[] parts = message.split("\\s+");
         String content = "";
 
         // Attempt to convert each item into an URL.
-        for( String item : parts ) {
+        for (String item : parts) {
             try {
                 URL url = new URL(item);
                 // If there is possible url then replace with anchor...
-                content += "<a style='color: #0000EE' href=\"" + url + "\">"+ url + "</a> ";
+                content += "<a style='color: #0000EE' href=\"" + url + "\">" + url + "</a> ";
             } catch (MalformedURLException e) {
                 // If there was an normal string
                 content += item + " ";
@@ -218,7 +229,7 @@ public class ChatRoomGUI extends JFrame {
                 JFileChooser fileChooser = windowsJFileChooser(new JFileChooser());
                 fileChooser.setDialogTitle("Chọn file muốn gửi.");
 
-                if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
+                if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                     fileToSend[0] = fileChooser.getSelectedFile();
 
                     //Send File
@@ -226,8 +237,8 @@ public class ChatRoomGUI extends JFrame {
                         FileInputStream fileInputStream = null;
                         fileInputStream = new FileInputStream(fileToSend[0].getAbsoluteFile());
                         int sizeInBytes = fileInputStream.available();
-                        float sizeInMegabytes =  sizeInBytes * 1F / (1024 * 1024);
-                        if (sizeInMegabytes > fileSizeLimit){
+                        float sizeInMegabytes = sizeInBytes * 1F / (1024 * 1024);
+                        if (sizeInMegabytes > fileSizeLimit) {
                             JOptionPane.showMessageDialog(ChatRoomGUI.this, "Kích thước file phải nhỏ hơn 250mb");
                             return;
                         }
@@ -237,7 +248,7 @@ public class ChatRoomGUI extends JFrame {
                             JOptionPane.showMessageDialog(ChatRoomGUI.this, "Loại file không được hỗ trợ!");
                             return;
                         }
-                        if (fileExtension.equals("doc") || fileExtension.equals("docx")){
+                        if (fileExtension.equals("doc") || fileExtension.equals("docx")) {
                             fileInputStream.close();
                             File f = new File(fileToSend[0].getAbsolutePath());
                             Path source = Paths.get(f.getAbsolutePath());
@@ -279,7 +290,7 @@ public class ChatRoomGUI extends JFrame {
 
                 //Values to position the emojiDialog
                 int offsetX = 0,
-                    offsetY = -240;
+                        offsetY = -240;
 
                 //Get position of label that trigger the event
                 JLabel label = (JLabel) e.getSource();
@@ -310,7 +321,7 @@ public class ChatRoomGUI extends JFrame {
                 }
 
                 JTable emojiTable = new JTable();
-                emojiTable.setModel(new DefaultTableModel(emojiMatrix, new String[] { "", "", "", "", "", "" }) {
+                emojiTable.setModel(new DefaultTableModel(emojiMatrix, new String[]{"", "", "", "", "", ""}) {
                     private static final long serialVersionUID = 1L;
 
                     @Override
@@ -356,6 +367,39 @@ public class ChatRoomGUI extends JFrame {
                 }
             }
         });
+
+        lblAudio.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                recordAudio();
+            }
+        });
+    }
+
+    // Hàm thực hiện thu âm hoặc dừng thu âm dựa vào biến isRecord
+    public void recordAudio() {
+        if (!isRecord) {
+            audioRecorder = new AudioRecorder();
+            setIsRecordAndLblAudioIcon(urlBlockMicrophone);
+            audioRecorder.start();
+        } else {
+            setIsRecordAndLblAudioIcon(urlMicrophone);
+            audioRecorder.terminate();
+        }
+
+    }
+
+    // Hàm truyền vào đường dẫn của icon cần sử dụng, trả về biến imageIcon
+    public ImageIcon getImageIcon(String url) {
+        ImageIcon imageIcon = new ImageIcon(new ImageIcon(getClass().getResource(url)).getImage());
+        return imageIcon;
+    }
+
+    // Hàm thay đổi trạng thái của biến isRecord và icon Micro tuỳ trường hợp.
+    public void setIsRecordAndLblAudioIcon(String url) {
+        this.isRecord = (isRecord) ? false : true;
+        ImageIcon imageIcon = getImageIcon(url);
+        lblAudio.setIcon(imageIcon);
     }
 
     public void setClients(String you, String stranger) {

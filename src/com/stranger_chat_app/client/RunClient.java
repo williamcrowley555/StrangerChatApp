@@ -19,7 +19,7 @@ public class RunClient {
     public static ChatRoomGUI chatRoomGUI;
     public static CallGUI callGUI;
 
-    // controller
+//    Controller
     public static SocketHandler socketHandler;
 
     public RunClient() {

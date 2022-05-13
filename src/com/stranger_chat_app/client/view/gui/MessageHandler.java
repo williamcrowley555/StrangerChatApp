@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.concurrent.Flow;
 
 public class MessageHandler {
     JPanel messageArea;
@@ -44,8 +43,8 @@ public class MessageHandler {
     }
 
 
-    public JPanel createAvatar(ImageIcon avatar, Color background,JLabel nickname, int width, int height, int paddingX, int paddingY){
-        JPanel avatarPanel = new JPanel( new BorderLayout());
+    public JPanel createAvatar(ImageIcon avatar, Color background, JLabel nickname, int width, int height, int paddingX, int paddingY) {
+        JPanel avatarPanel = new JPanel(new BorderLayout());
         avatarPanel.setPreferredSize(new Dimension(width, height));
         JLabel icon = new JLabel();
         icon.setIcon(avatar);
@@ -59,11 +58,12 @@ public class MessageHandler {
         avatarPanel.setBackground(background);
         return avatarPanel;
     }
-    public JPanel createBubble(Color bubbleColor, String userType, int paddingX, int paddingY){
-        JPanel bubble = new JPanel( new WrapLayout(WrapLayout.LEFT));
+
+    public JPanel createBubble(Color bubbleColor, String userType, int paddingX, int paddingY) {
+        JPanel bubble = new JPanel(new WrapLayout(WrapLayout.LEFT));
         bubble.setBackground(bubbleColor);
         bubble.setBorder(BorderFactory.createEmptyBorder(paddingY, paddingX, paddingY, paddingX));
-        return  bubble;
+        return bubble;
     }
 
     public void calculateChatBubbleSize(Message message, String userType){
@@ -97,9 +97,8 @@ public class MessageHandler {
             calculateChatBubbleSize(message, userType);
 
             //Add spacer between messages
-            if (vertical.getComponentCount() != 0)
-            {
-                JPanel spacerBubble = createBubble(Color.white, userType, 5 , 10);
+            if (vertical.getComponentCount() != 0) {
+                JPanel spacerBubble = createBubble(Color.white, userType, 5, 10);
                 vertical.add(spacerBubble);
             }
 
@@ -109,24 +108,47 @@ public class MessageHandler {
             JPanel chatBubble = createChatBubble(textBubble, message, userType);
             vertical.add(chatBubble);
             messageArea.revalidate();
-        } catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
         return true;
     }
 
-    public boolean addFileMessage (Message message, String userType, String fileName){
-        try{
+    public void addAudioMessage(byte[] data, String you, String stranger,String userType) throws InterruptedException {
+        Message message = new Message();
+        message.setSender(stranger);
+        message.setRecipient(you);
+        calculateChatBubbleSize(message, userType);
+        AudioPanel audioPanel = new AudioPanel(data, userType);
+        JPanel audioMessage = createAudioChatBubble(audioPanel, you, stranger, userType);
+        audioMessage.setVisible(true);
+        vertical.add(audioMessage);
+        messageArea.revalidate();
+    }
+
+    public void showAudioMessage(byte[] data, String you, String userType) throws InterruptedException {
+        Message message = new Message();
+        message.setSender(you);
+        message.setRecipient(you);
+        calculateChatBubbleSize(message, userType);
+        AudioPanel audioPanel = new AudioPanel(data, userType);
+        JPanel audioMessage = createAudioChatBubble(audioPanel, you, you, userType);
+        audioMessage.setVisible(true);
+        vertical.add(audioMessage);
+        messageArea.revalidate();
+    }
+
+    public boolean addFileMessage(Message message, String userType, String fileName) {
+        try {
             calculateChatBubbleSize(message, userType);
 
             //Add spacer between messages
-            if (vertical.getComponentCount() != 0)
-            {
-                JPanel spacerBubble = createBubble(Color.white, userType, 5 , 10);
+            if (vertical.getComponentCount() != 0) {
+                JPanel spacerBubble = createBubble(Color.white, userType, 5, 10);
                 vertical.add(spacerBubble);
             }
 
-            JPanel fileBubble = createBubble(Color.white,userType, 5,15);
+            JPanel fileBubble = createBubble(Color.white, userType, 5, 15);
             addFileBubbleContent(fileBubble, message, fileName, userType, textBubbleWidth);
 
             JPanel chatBubble = createChatBubble(fileBubble, message, userType);
@@ -151,25 +173,50 @@ public class MessageHandler {
                 nickname, avatarWidth,contentBubble.getHeight() + 10,0,0);
         chatBubble.setBackground(Color.white);
         if (userType.equals("sender")){
-            AbstractBorder brdrRight = new TextBubbleBorder(messengerGreen,2,16,8,false);
+            AbstractBorder brdrRight = new TextBubbleBorder(messengerGreen,2,16,8, false);
             contentBubble.setBorder(brdrRight);
             chatBubble.add(contentBubble, BorderLayout.CENTER);
             chatBubble.add(pnlAvatar, BorderLayout.EAST);
         } else {
-            AbstractBorder brdrLeft = new TextBubbleBorder(messengerBlue,2,16,8);
+            AbstractBorder brdrLeft = new TextBubbleBorder(messengerBlue, 2, 16, 8);
             contentBubble.setBorder(brdrLeft);
             chatBubble.add(contentBubble, BorderLayout.CENTER);
             chatBubble.add(pnlAvatar, BorderLayout.WEST);
         }
 
-        return  chatBubble;
+        return chatBubble;
     }
 
-    public void addBubbleTextContent(JPanel textBubble, Message message, int textBubbleWidth){
-        if (containURL(message.getContent())){
+    public JPanel createAudioChatBubble(AudioPanel audioPanel, String you, String stranger, String userType) {
+        JPanel chatBubble = new JPanel();
+        chatBubble.setLayout(new BorderLayout());
+        ImageIcon imageIcon = new ImageIcon(new ImageIcon(getClass().getResource(defaultAvatarLocation))
+                .getImage().getScaledInstance(32, 32, Image.SCALE_DEFAULT));
+        JLabel nickname = new JLabel(userType.equals("sender") ? "Bạn" : stranger);
+
+        JPanel pnlAvatar = createAvatar(imageIcon, Color.white,
+                nickname, avatarWidth, audioPanel.getHeight() + 10, 0, 0);
+        chatBubble.setBackground(Color.white);
+        if (userType.equals("sender")) {
+            AbstractBorder brdrRight = new TextBubbleBorder(messengerGreen, 2, 16, 8, false);
+            audioPanel.setBorder(brdrRight);
+            chatBubble.add(audioPanel, BorderLayout.CENTER);
+            chatBubble.add(pnlAvatar, BorderLayout.EAST);
+        } else {
+            AbstractBorder brdrLeft = new TextBubbleBorder(messengerBlue, 2, 16, 8);
+            audioPanel.setBorder(brdrLeft);
+            chatBubble.add(audioPanel, BorderLayout.CENTER);
+            chatBubble.add(pnlAvatar, BorderLayout.WEST);
+        }
+
+        return chatBubble;
+    }
+
+    public void addBubbleTextContent(JPanel textBubble, Message message, int textBubbleWidth) {
+        if (containURL(message.getContent())) {
             //Hyperlink message
-            String [] parts = message.getContent().split("\\s+");
-            for( String item : parts ) {
+            String[] parts = message.getContent().split("\\s+");
+            for (String item : parts) {
                 try {
                     URL url = new URL(item);
 
@@ -205,14 +252,16 @@ public class MessageHandler {
             textBubble.add(textArea);
         }
     }
-    public void addFileBubbleContent(JPanel fileBubble, Message message, String fileName, String userType, int textBubbleWidth){
+
+    public void addFileBubbleContent(JPanel fileBubble, Message message, String fileName, String userType, int textBubbleWidth) {
         String labelText;
         String htmlContent;
         String file_name = fileName == null ? message.getContent() : fileName;
         // fileName != null : sender
         // fileName == null : recipient
 
-        htmlContent = "<a style='color: #0000EE' href=\"" + file_name + "\">"+ file_name + "</a> ";
+        htmlContent = "<a style='color: #0000EE' href=\"" + file_name + "\">" + file_name + "</a> ";
+
 
         labelText = String.format("<html><div WIDTH=%d>%s</div></html>", textBubbleWidth, htmlContent);
         JLabel text = new JLabel(labelText);
@@ -250,7 +299,8 @@ public class MessageHandler {
             try {
                 URL url = new URL(item);
                 return true;
-            } catch (MalformedURLException ignored) {}
+            } catch (MalformedURLException ignored) {
+            }
         }
         return false;
     }
@@ -301,15 +351,13 @@ public class MessageHandler {
         {
 
             @Override
-            public void mouseExited(MouseEvent arg0)
-            {
+            public void mouseExited(MouseEvent arg0) {
                 l.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 l.setText(s);
             }
 
             @Override
-            public void mouseEntered(MouseEvent arg0)
-            {
+            public void mouseEntered(MouseEvent arg0) {
                 l.setCursor(new Cursor(Cursor.HAND_CURSOR));
                 l.setText(String.format("<HTML><FONT color = \"#000099\"><U>%s</U></FONT></HTML>", s));
             }
@@ -346,5 +394,4 @@ public class MessageHandler {
         l.setToolTipText(String.format("Tải về %s", link));
         return l;
     }
-
 }

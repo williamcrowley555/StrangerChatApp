@@ -5,8 +5,6 @@ import com.stranger_chat_app.client.view.enums.CallState;
 import com.stranger_chat_app.client.view.enums.GUIName;
 import com.stranger_chat_app.client.view.enums.MainMenuState;
 import com.stranger_chat_app.client.view.gui.ChatRoomGUI;
-import com.stranger_chat_app.server.RunServer;
-import com.stranger_chat_app.server.controller.Client;
 import com.stranger_chat_app.server.controller.MyFile;
 import com.stranger_chat_app.shared.constant.DataType;
 import com.stranger_chat_app.shared.model.Data;
@@ -24,7 +22,6 @@ import java.io.*;
 import java.net.Socket;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -160,6 +157,10 @@ public class SocketHandler {
                             onReceiveVoice(receivedContent);
                             break;
 
+                        case AUDIO:
+                            onReceiveAudio(receivedContent);
+                            break;
+
                         case LOGOUT:
                             onReceiveLogout(receivedContent);
                             break;
@@ -189,6 +190,8 @@ public class SocketHandler {
         } catch (InvalidKeyException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
             try {
@@ -291,13 +294,13 @@ public class SocketHandler {
         if (status.equals("failed")) {
             String failedMsg = splitted[1];
             int option = JOptionPane.showConfirmDialog(RunClient.mainMenuGUI, failedMsg + ". Tiếp tục ghép đôi?", "Ghép đôi thất bại",
-                                        JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
 
             // stop pairing
             // reset display state of main menu
             RunClient.mainMenuGUI.setDisplayState(MainMenuState.DEFAULT);
 
-            if(option == JOptionPane.YES_OPTION) {
+            if (option == JOptionPane.YES_OPTION) {
                 // continue pairing
                 pairUp();
                 return;
@@ -349,30 +352,28 @@ public class SocketHandler {
         Message message = Message.parse(received);
         MyFile myFile = MyFile.parse(message.getContent());
 
-            if (ChatRoomGUI.path != null)
-            {
-                try {
-                    String fileName = ChatRoomGUI.path.substring(ChatRoomGUI.path.lastIndexOf("\\"));
-                    String fileExtension = fileName.substring(fileName.lastIndexOf("."));
-                    String originalFileExtension = myFile.getName().substring(myFile.getName().lastIndexOf("."));
+        if (ChatRoomGUI.path != null) {
+            try {
+                String fileName = ChatRoomGUI.path.substring(ChatRoomGUI.path.lastIndexOf("\\"));
+                String fileExtension = fileName.substring(fileName.lastIndexOf("."));
+                String originalFileExtension = myFile.getName().substring(myFile.getName().lastIndexOf("."));
 
-                    if (fileExtension.equals(originalFileExtension)){
-                        FileOutputStream output = new FileOutputStream(
-                                new File(ChatRoomGUI.path));
-                        output.write(myFile.getData());
-                        output.close();
-                        JOptionPane.showMessageDialog(null,"Lưu thành công!");
-                    }
-                    else
-                        JOptionPane.showMessageDialog(null,"Định dạng file lưu khác file gốc, lưu file thất bại!");
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
-            } else {
-                System.out.println("Chưa chọn đường dẫn");
+                if (fileExtension.equals(originalFileExtension)) {
+                    FileOutputStream output = new FileOutputStream(
+                            new File(ChatRoomGUI.path));
+                    output.write(myFile.getData());
+                    output.close();
+                    JOptionPane.showMessageDialog(null, "Lưu thành công!");
+                } else
+                    JOptionPane.showMessageDialog(null, "Định dạng file lưu khác file gốc, lưu file thất bại!");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
             }
+        } else {
+            System.out.println("Chưa chọn đường dẫn");
+        }
     }
 
     private void onReceiveLeaveChatRoom(String received) {
@@ -443,6 +444,11 @@ public class SocketHandler {
         speaker.write(buffer, 0, buffer.length);
     }
 
+    private void onReceiveAudio(String received) throws InterruptedException {
+        byte[] data = Base64.getDecoder().decode(received);
+        RunClient.chatRoomGUI.addAudio(data, "recipient" );
+    }
+
     private void onReceiveLogout(String received) {
         // xóa nickname
         this.nickname = null;
@@ -511,6 +517,10 @@ public class SocketHandler {
 
     public void sendVoice(String data) {
         sendData(DataType.VOICE, data);
+    }
+
+    public void sendAudio(String data) {
+        sendData(DataType.AUDIO, data);
     }
 
     public void logout() {
