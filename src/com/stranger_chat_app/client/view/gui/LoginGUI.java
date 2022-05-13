@@ -43,6 +43,8 @@ public class LoginGUI extends JFrame {
     }
 
     private void initComponents() {
+        this.setResizable(false);
+
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
@@ -62,8 +64,8 @@ public class LoginGUI extends JFrame {
                     String nickname = txtNickname.getText();
                     if (nickname.isEmpty()) {
                         JOptionPane.showMessageDialog(pnlMain, "Vui lòng nhập nickname của bạn", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-                    } else if (nickname.length() > 20) {
-                        JOptionPane.showMessageDialog(pnlMain, "Nickname không được đặt quá 20 ký tự", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                    } else if (nickname.length() > 15) {
+                        JOptionPane.showMessageDialog(pnlMain, "Nickname không được đặt quá 15 ký tự", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                     } else {
                         // Chờ server kiểm tra đăng nhập
                         setLoading(true, "Đang xử lý...");
@@ -85,8 +87,8 @@ public class LoginGUI extends JFrame {
 
                 if (nickname.isEmpty()) {
                     JOptionPane.showMessageDialog(pnlMain, "Vui lòng nhập nickname của bạn", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-                } else if (nickname.length() > 20) {
-                    JOptionPane.showMessageDialog(pnlMain, "Nickname không được đặt quá 20 ký tự", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                } else if (nickname.length() > 15) {
+                    JOptionPane.showMessageDialog(pnlMain, "Nickname không được đặt quá 15 ký tự", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                 } else {
                     // Chờ server kiểm tra đăng nhập
                     setLoading(true, "Đang xử lý...");

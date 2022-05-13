@@ -165,6 +165,10 @@ public class SocketHandler {
                         case STOP_VIDEO_STREAM:
                             onReceiveStopVideoStream(receivedContent);
                             break;
+                            
+                        case AUDIO:
+                            onReceiveAudio(receivedContent);
+                            break;
 
                         case LOGOUT:
                             onReceiveLogout(receivedContent);
@@ -195,6 +199,8 @@ public class SocketHandler {
         } catch (InvalidKeyException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
             try {
@@ -297,13 +303,13 @@ public class SocketHandler {
         if (status.equals("failed")) {
             String failedMsg = splitted[1];
             int option = JOptionPane.showConfirmDialog(RunClient.mainMenuGUI, failedMsg + ". Tiếp tục ghép đôi?", "Ghép đôi thất bại",
-                                        JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
 
             // stop pairing
             // reset display state of main menu
             RunClient.mainMenuGUI.setDisplayState(MainMenuState.DEFAULT);
 
-            if(option == JOptionPane.YES_OPTION) {
+            if (option == JOptionPane.YES_OPTION) {
                 // continue pairing
                 pairUp();
                 return;
@@ -355,30 +361,28 @@ public class SocketHandler {
         Message message = Message.parse(received);
         MyFile myFile = MyFile.parse(message.getContent());
 
-            if (ChatRoomGUI.path != null)
-            {
-                try {
-                    String fileName = ChatRoomGUI.path.substring(ChatRoomGUI.path.lastIndexOf("\\"));
-                    String fileExtension = fileName.substring(fileName.lastIndexOf("."));
-                    String originalFileExtension = myFile.getName().substring(myFile.getName().lastIndexOf("."));
+        if (ChatRoomGUI.path != null) {
+            try {
+                String fileName = ChatRoomGUI.path.substring(ChatRoomGUI.path.lastIndexOf("\\"));
+                String fileExtension = fileName.substring(fileName.lastIndexOf("."));
+                String originalFileExtension = myFile.getName().substring(myFile.getName().lastIndexOf("."));
 
-                    if (fileExtension.equals(originalFileExtension)){
-                        FileOutputStream output = new FileOutputStream(
-                                new File(ChatRoomGUI.path));
-                        output.write(myFile.getData());
-                        output.close();
-                        JOptionPane.showMessageDialog(null,"Lưu thành công!");
-                    }
-                    else
-                        JOptionPane.showMessageDialog(null,"Định dạng file lưu khác file gốc, lưu file thất bại!");
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
-            } else {
-                System.out.println("Chưa chọn đường dẫn");
+                if (fileExtension.equals(originalFileExtension)) {
+                    FileOutputStream output = new FileOutputStream(
+                            new File(ChatRoomGUI.path));
+                    output.write(myFile.getData());
+                    output.close();
+                    JOptionPane.showMessageDialog(null, "Lưu thành công!");
+                } else
+                    JOptionPane.showMessageDialog(null, "Định dạng file lưu khác file gốc, lưu file thất bại!");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
             }
+        } else {
+            System.out.println("Chưa chọn đường dẫn");
+        }
     }
 
     private void onReceiveLeaveChatRoom(String received) {
@@ -458,6 +462,11 @@ public class SocketHandler {
     private void onReceiveStopVideoStream(String received) {
         RunClient.callGUI.showStrangerWebcam(null);
     }
+    
+    private void onReceiveAudio(String received) throws InterruptedException {
+        byte[] data = Base64.getDecoder().decode(received);
+        RunClient.chatRoomGUI.addAudio(data, "recipient" );
+    }
 
     private void onReceiveLogout(String received) {
         // xóa nickname
@@ -531,6 +540,10 @@ public class SocketHandler {
 
     public void stopVideoStream() {
         sendData(DataType.STOP_VIDEO_STREAM, null);
+    }
+
+    public void sendAudio(String data) {
+        sendData(DataType.AUDIO, data);
     }
 
     public void logout() {

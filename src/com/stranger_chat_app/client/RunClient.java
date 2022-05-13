@@ -11,7 +11,7 @@ import javax.swing.*;
 
 public class RunClient {
     private String hostname = "localhost";
-    private int port = 5003;
+    private int port = 5004;
 
 //    GUIs
     public static LoginGUI loginGUI;
@@ -19,7 +19,7 @@ public class RunClient {
     public static ChatRoomGUI chatRoomGUI;
     public static CallGUI callGUI;
 
-    // controller
+//    Controller
     public static SocketHandler socketHandler;
 
     public RunClient() {

@@ -160,6 +160,7 @@ public class CallGUI extends JFrame{
         cardLayout = (CardLayout) pnlScreen.getLayout();
         webcamPanel = new WebcamPanel();
         pnlScreen.add(webcamPanel, "webcam");
+        this.setResizable(false);
 
         btnAcceptCall.addMouseListener(new MouseAdapter() {
             @Override

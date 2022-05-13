@@ -30,6 +30,7 @@ public enum DataType {
     VOICE,
     VIDEO_STREAM,
     STOP_VIDEO_STREAM,
+    AUDIO,
     LOGOUT,
     EXIT,
 }
