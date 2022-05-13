@@ -120,6 +120,8 @@ public class CallGUI extends JFrame{
     }
 
     private void initComponents() {
+        this.setResizable(false);
+
         btnAcceptCall.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {

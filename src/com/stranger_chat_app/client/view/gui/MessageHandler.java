@@ -72,7 +72,7 @@ public class MessageHandler {
         //Add spacer between messages
         if (vertical.getComponentCount() != 0)
         {
-            JPanel spacerBubble = createBubble(Color.white, userType, 5 , 10);
+            JPanel spacerBubble = createBubble(Color.white, userType, 5 , 0);
             vertical.add(spacerBubble);
         }
 
@@ -173,25 +173,36 @@ public class MessageHandler {
                 try {
                     URL url = new URL(item);
 
-                    JLabel label = new JLabel(url.toString());
-                    label = makeHyperLink(url.toString(), url.toString(), 0, label.getText().length());
-                    label.setForeground(Color.BLUE);
-                    textBubble.add(label);
+                    JTextArea area = new JTextArea(url.toString());
+
+                    //JLabel label = new JLabel(url.toString());
+                    area = makeHyperLink(url.toString(), url.toString(), 0, area.getText().length());
+                    area.setBackground(Color.white);
+                    area.setColumns(textBubbleWidth / 12);
+                    area.setLineWrap(true);
+                    area.setEditable(false);
+                    area.setForeground(Color.BLUE);
+                    textBubble.add(area);
                 } catch (MalformedURLException e) {
                     // If there was an normal string
-                    String labelText = String.format(item);
-                    JLabel text = new JLabel(labelText);
-                    text.setForeground(Color.BLACK);
-                    textBubble.add(text);
+                    JTextArea textArea = new JTextArea(item);
+                    textArea.setBackground(Color.white);
+                    textArea.setLineWrap(true);
+                    textArea.setEditable(false);
+                    textArea.setForeground(Color.BLACK);
+                    textArea.setColumns(textBubbleWidth/12);
+                    textBubble.add(textArea);
                 }
             }
         } else {
             //Normal text message
-            String labelText;
-            labelText = String.format("<html><div WIDTH=%d>%s</div></html>", textBubbleWidth, message.getContent());
-            JLabel text = new JLabel(labelText);
-            text.setForeground(Color.BLACK);
-            textBubble.add(text);
+            JTextArea textArea = new JTextArea(message.getContent());
+            textArea.setBackground(Color.white);
+            textArea.setColumns(textBubbleWidth / 12);
+            textArea.setLineWrap(true);
+            textArea.setEditable(false);
+            textArea.setForeground(Color.BLACK);
+            textBubble.add(textArea);
         }
     }
     public void addFileBubbleContent(JPanel fileBubble, Message message, String fileName, String userType, int textBubbleWidth){
@@ -244,23 +255,23 @@ public class MessageHandler {
         return false;
     }
 
-    public static JLabel makeHyperLink(final String s, final String link, int x, int y)
+    public static JTextArea makeHyperLink(final String s, final String link, int x, int y)
     {
-        final JLabel l = new JLabel(s);
-        l.addMouseListener(new MouseAdapter()
+        final JTextArea area = new JTextArea(s);
+        area.addMouseListener(new MouseAdapter()
         {
             @Override
             public void mouseExited(MouseEvent arg0)
             {
-                l.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                l.setText(s);
+                area.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                area.setText(s);
             }
 
             @Override
             public void mouseEntered(MouseEvent arg0)
             {
-                l.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                l.setText(String.format("<HTML><FONT color = \"#000099\"><U>%s</U></FONT></HTML>", s));
+                area.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                //area.setText(String.format("<HTML><FONT color = \"#000099\"><U>%s</U></FONT></HTML>", s));
             }
 
             @Override
@@ -277,9 +288,9 @@ public class MessageHandler {
             }
         });
 
-        l.setBounds(x, y, s.length()*5, 20);
-        l.setToolTipText(String.format("Truy cập %s", link));
-        return l;
+        //area.setBounds(x, y, s.length()*5, 20);
+        area.setToolTipText(String.format("Truy cập %s", link));
+        return area;
     }
 
     public static JLabel makeFileHyperLink(Message message, final String s, final String link, int x, int y, final boolean selfDownload)

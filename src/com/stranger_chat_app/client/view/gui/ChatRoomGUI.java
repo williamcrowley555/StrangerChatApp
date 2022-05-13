@@ -145,6 +145,7 @@ public class ChatRoomGUI extends JFrame {
 
 
     private void initComponents() {
+        this.setResizable(false);
         scrollPanelMsg.setBorder(new MatteBorder(2,2,2,2, MessageHandler.flatGrey));
 
         txtMessage.setMargin(new Insets(3, 3, 3, 3));

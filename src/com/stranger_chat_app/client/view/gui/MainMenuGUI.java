@@ -165,6 +165,8 @@ public class MainMenuGUI extends JFrame {
     }
 
     private void initComponents() {
+        this.setResizable(false);
+
         btnLogout.setOpaque(false);
         btnLogout.setContentAreaFilled(false);
         btnLogout.setBorder(null);
